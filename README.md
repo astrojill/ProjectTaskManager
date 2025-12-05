@@ -1,7 +1,7 @@
 Application de gestionnaire de tâches fait dans le cadre d'un projet universitaire à l'ECE Paris.
-
+<br>
 Membre du projet : Philippe Peng, Rémi Paillaud-Iwabuchi, Kevin Nguyen, Tatiana Blisac
-
+<br>
 Arborescence du projet :
 TaskManager/
  ├─ Main.java
