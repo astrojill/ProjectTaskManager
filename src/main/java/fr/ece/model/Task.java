@@ -156,8 +156,6 @@ public class Task {
         this.updatedAt = updatedAt;
     }
 
-    // Affichage rapide pour debug
-    @Override
     public String toString() {
         return "Task { id=" + id +
                 ", title='" + title + "'" +
