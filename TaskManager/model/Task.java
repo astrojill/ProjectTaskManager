@@ -157,10 +157,12 @@ public class Task {
     // Affichage rapide pour debug
     @Override
     public String toString() {
-        return "Task{id=" + id +
-                ", title='" + title + '\'' +
-                ", status='" + status + '\'' +
-                ", priority='" + priority + '\'' +
-                '}';
+        return "Task { id=" + id +
+               ", title='" + title + "'" +
+               ", status='" + status + "'" +
+               ", priority='" + priority + "'" +
+               " }";
     }
+
 }
+
