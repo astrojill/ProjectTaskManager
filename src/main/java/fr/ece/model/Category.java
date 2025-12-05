@@ -38,7 +38,6 @@ public class Category {
         this.name = name;  // mise à jour du nom (au cas où l'admin modifie)
     }
 
-    @Override
     public String toString() {
         return "Category { id=" + id +
                 ", name='" + name + "'" +
