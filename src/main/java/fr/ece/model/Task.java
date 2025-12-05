@@ -73,7 +73,7 @@ public class Task {
         this.user = user;
     }
 
-    // Getters & setters
+    // Getters et setters
 
     public int getId() {
         return id;
