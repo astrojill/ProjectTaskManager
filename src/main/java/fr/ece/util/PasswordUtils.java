@@ -10,7 +10,7 @@ public class PasswordUtils {
             MessageDigest md = MessageDigest.getInstance("SHA-256"); // on choisit l'algorithme
             byte[] hashBytes = md.digest(password.getBytes());       // on calcule le hash
 
-            // On convertit les bytes en string hexadécimale (genre "a3b4c...")
+            // On convertit les bytes en string hexadécimale
             StringBuilder sb = new StringBuilder();
             for (byte b : hashBytes) {
                 sb.append(String.format("%02x", b));
