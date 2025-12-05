@@ -21,7 +21,7 @@ public class Category {
         this.name = name;
     }
 
-    // Getters & Setters
+    // Getters et Setters
     public int getId() {
         return id;
     }
