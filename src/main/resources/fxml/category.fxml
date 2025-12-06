@@ -1,14 +1,164 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
+<BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="CONTROLLER_NAME"
-            prefHeight="400.0" prefWidth="600.0">
+            fx:controller="fr.ece.controller.CategoryController"
+            prefHeight="600.0" prefWidth="900.0"
+            stylesheets="@../css/styles.css"
+            styleClass="root">
 
-</AnchorPane>
+<!--    (nom des fonctions handle à chaanger dependant des controlleurs)-->
+
+    <!-- Top Bar -->
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-bar">
+                <padding>
+                    <Insets top="15" right="20" bottom="15" left="20"/>
+                </padding>
+
+                <Button text="← Retour"
+                        onAction="#handleBack"
+                        styleClass="back-button"/>
+
+                <Text text="Gestion des Catégories" styleClass="page-title"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <HBox spacing="20" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Categories List -->
+            <VBox spacing="15" prefWidth="550" HBox.hgrow="ALWAYS">
+                <!-- Search and Add -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <TextField fx:id="searchField"
+                               promptText="Rechercher une catégorie..."
+                               prefWidth="300"
+                               onKeyReleased="#handleSearch"
+                               HBox.hgrow="ALWAYS"/>
+
+                    <Button text="+ Nouvelle Catégorie"
+                            onAction="#handleNew"
+                            styleClass="primary-button"/>
+                </HBox>
+
+                <!-- Categories Table -->
+                <TableView fx:id="categoriesTable" VBox.vgrow="ALWAYS" styleClass="table-view">
+                    <columns>
+                        <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
+                        <TableColumn fx:id="nameColumn" text="Nom" prefWidth="200"/>
+                        <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="250"/>
+                        <TableColumn fx:id="tasksCountColumn" text="Tâches" prefWidth="80"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="Aucune catégorie disponible" styleClass="placeholder-label"/>
+                    </placeholder>
+                </TableView>
+
+                <!-- Action Buttons -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button text="Modifier"
+                            onAction="#handleEdit"
+                            styleClass="secondary-button"
+                            fx:id="editButton"
+                            disable="true"/>
+                    <Button text="Supprimer"
+                            onAction="#handleDelete"
+                            styleClass="danger-button"
+                            fx:id="deleteButton"
+                            disable="true"/>
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <Label fx:id="countLabel" text="0 catégories" styleClass="count-label"/>
+                </HBox>
+            </VBox>
+
+            <Separator orientation="VERTICAL"/>
+
+            <!-- Category Form -->
+            <VBox spacing="20" prefWidth="300">
+                <Text fx:id="formTitle" text="Détails de la catégorie" styleClass="section-title"/>
+
+                <Separator/>
+
+                <VBox spacing="15" VBox.vgrow="ALWAYS">
+                    <!-- Category Name -->
+                    <VBox spacing="8">
+                        <Label text="Nom *" styleClass="form-label"/>
+                        <TextField fx:id="nameField"
+                                   promptText="Ex: Développement, Design..."
+                                   styleClass="text-field"/>
+                    </VBox>
+
+                    <!-- Category Description -->
+                    <VBox spacing="8">
+                        <Label text="Description" styleClass="form-label"/>
+                        <TextArea fx:id="descriptionArea"
+                                  promptText="Décrivez cette catégorie..."
+                                  wrapText="true"
+                                  prefRowCount="8"
+                                  styleClass="text-area"/>
+                    </VBox>
+
+                    <!-- Category Color (Optional) -->
+                    <VBox spacing="8">
+                        <Label text="Couleur" styleClass="form-label"/>
+                        <ColorPicker fx:id="colorPicker"
+                                     maxWidth="Infinity"
+                                     styleClass="color-picker"/>
+                    </VBox>
+
+                    <Region VBox.vgrow="ALWAYS"/>
+
+                    <!-- Message Label -->
+                    <Label fx:id="messageLabel"
+                           styleClass="message-label"
+                           wrapText="true"
+                           visible="false"
+                           managed="false"/>
+                </VBox>
+
+                <Separator/>
+
+                <!-- Form Buttons -->
+                <VBox spacing="10">
+                    <Button text="Enregistrer"
+                            onAction="#handleSave"
+                            styleClass="primary-button"
+                            maxWidth="Infinity"
+                            fx:id="saveButton"
+                            disable="true"/>
+
+                    <Button text="Annuler"
+                            onAction="#handleCancel"
+                            styleClass="secondary-button"
+                            maxWidth="Infinity"
+                            fx:id="cancelButton"
+                            disable="true"/>
+                </VBox>
+            </VBox>
+        </HBox>
+    </center>
+
+    <!-- Status Bar -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="status-bar">
+            <padding>
+                <Insets top="10" right="20" bottom="10" left="20"/>
+            </padding>
+            <Label fx:id="statusLabel" text="Prêt" styleClass="status-text"/>
+        </HBox>
+    </bottom>
+</BorderPane>
