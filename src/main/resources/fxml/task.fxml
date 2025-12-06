@@ -1,14 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="CONTROLLER_NAME"
-            prefHeight="400.0" prefWidth="600.0">
+            fx:controller="fr.ece.controller.TaskController"
+            prefHeight="600.0" prefWidth="500.0"
+            stylesheets="@../css/styles.css"
+            styleClass="dialog-root">
 
+    <VBox spacing="20" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+          AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+        <padding>
+            <Insets top="30" right="30" bottom="30" left="30"/>
+        </padding>
+
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT">
+            <Text fx:id="formTitle" text="Nouvelle Tâche" styleClass="dialog-title"/>
+        </HBox>
+
+        <Separator/>
+
+        <!-- Form -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="scroll-pane">
+            <VBox spacing="20">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
+
+                <!-- Task Title -->
+                <VBox spacing="8">
+                    <Label text="Titre *" styleClass="form-label"/>
+                    <TextField fx:id="titleField"
+                               promptText="Entrez le titre de la tâche"
+                               styleClass="text-field"/>
+                </VBox>
+
+                <!-- Task Description -->
+                <VBox spacing="8">
+                    <Label text="Description" styleClass="form-label"/>
+                    <TextArea fx:id="descriptionArea"
+                              promptText="Décrivez la tâche en détail..."
+                              wrapText="true"
+                              prefRowCount="5"
+                              styleClass="text-area"/>
+                </VBox>
+
+                <!-- Category -->
+                <VBox spacing="8">
+                    <Label text="Catégorie *" styleClass="form-label"/>
+                    <ComboBox fx:id="categoryComboBox"
+                              promptText="Sélectionnez une catégorie"
+                              maxWidth="Infinity"
+                              styleClass="combo-box"/>
+                </VBox>
+
+                <!-- Priority -->
+                <VBox spacing="8">
+                    <Label text="Priorité *" styleClass="form-label"/>
+                    <HBox spacing="10">
+                        <ToggleButton fx:id="lowPriorityBtn" text="Basse"
+                                      toggleGroup="$priorityGroup"
+                                      styleClass="priority-btn-low"/>
+                        <ToggleButton fx:id="mediumPriorityBtn" text="Moyenne"
+                                      toggleGroup="$priorityGroup"
+                                      selected="true"
+                                      styleClass="priority-btn-medium"/>
+                        <ToggleButton fx:id="highPriorityBtn" text="Haute"
+                                      toggleGroup="$priorityGroup"
+                                      styleClass="priority-btn-high"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Status -->
+                <VBox spacing="8">
+                    <Label text="Statut *" styleClass="form-label"/>
+                    <ComboBox fx:id="statusComboBox"
+                              maxWidth="Infinity"
+                              styleClass="combo-box"/>
+                </VBox>
+
+                <!-- Due Date -->
+                <VBox spacing="8">
+                    <Label text="Date limite" styleClass="form-label"/>
+                    <DatePicker fx:id="dueDatePicker"
+                                maxWidth="Infinity"
+                                promptText="Sélectionnez une date"
+                                styleClass="date-picker"/>
+                </VBox>
+
+                <!-- Assigned To -->
+                <VBox spacing="8" fx:id="assignedToContainer">
+                    <Label text="Assigner à" styleClass="form-label"/>
+                    <ComboBox fx:id="assignedToComboBox"
+                              promptText="Sélectionnez un utilisateur"
+                              maxWidth="Infinity"
+                              styleClass="combo-box"/>
+                </VBox>
+
+                <!-- Error/Info Label -->
+                <Label fx:id="messageLabel"
+                       styleClass="message-label"
+                       wrapText="true"
+                       visible="false"
+                       managed="false"/>
+            </VBox>
+        </ScrollPane>
+
+        <Separator/>
+
+        <!-- Action Buttons -->
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="Annuler"
+                    onAction="#handleCancel"
+                    styleClass="secondary-button"
+                    prefWidth="120"/>
+            <Button text="Enregistrer"
+                    onAction="#handleSave"
+                    styleClass="primary-button"
+                    prefWidth="120"/>
+        </HBox>
+    </VBox>
 </AnchorPane>
