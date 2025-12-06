@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class RegisterController {
 
-    // ===== ÉLÉMENTS FXML =====
+    // éléments fxml
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private PasswordField confirmPasswordField;
@@ -27,10 +27,9 @@ public class RegisterController {
     @FXML private RadioButton adminRoleRadio;
     @FXML private javafx.scene.layout.VBox roleContainer;
 
-    // ===== VARIABLES =====
     private UserDAO userDAO;
 
-    // ===== INITIALIZE =====
+    // initialisation
     @FXML
     public void initialize() {
         userDAO = new UserDAO();
@@ -53,21 +52,20 @@ public class RegisterController {
         });
     }
 
-    // ===== MÉTHODE handleRegister =====
+    // méthode handleRegister
     @FXML
     private void handleRegister(ActionEvent event) {
-        // 1. Récupérer les valeurs
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
 
-        // 2. Validation complète
+        // Validation globale
         if (!validateForm(username, password, confirmPassword)) {
             return;
         }
 
         try {
-            // 3. Vérifier si le nom d'utilisateur existe déjà
+            // Vérifier si le nom d'utilisateur existe déjà
             User existingUser = userDAO.getUserByUsername(username);
             if (existingUser != null) {
                 showError("Ce nom d'utilisateur est déjà pris");
@@ -75,11 +73,11 @@ public class RegisterController {
                 return;
             }
 
-            // 4. Créer le nouvel utilisateur
+            // Créer le nouvel utilisateur
             User newUser = new User();
             newUser.setUsername(username);
 
-            // Hasher le mot de passe
+            // Hasher le mot de passe (BCrypt)
             String hashedPassword = PasswordUtils.hashPassword(password);
             newUser.setPasswordHash(hashedPassword);
 
@@ -90,16 +88,16 @@ public class RegisterController {
                 newUser.setRole(User.Role.USER);
             }
 
-            // 5. Sauvegarder dans la base de données
-            boolean success = userDAO.save(newUser);
+            // Sauvegarder dans la base de données
+            boolean success = userDAO.createUser(newUser); // <-- ICI : createUser au lieu de save
 
             if (success) {
                 showSuccess("Compte créé avec succès ! Redirection...");
 
-                // Attendre 2 secondes puis rediriger vers login
-                javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(
-                        javafx.util.Duration.seconds(2)
-                );
+                javafx.animation.PauseTransition pause =
+                        new javafx.animation.PauseTransition(
+                                javafx.util.Duration.seconds(2)
+                        );
                 pause.setOnFinished(e -> redirectToLogin());
                 pause.play();
 
@@ -113,22 +111,20 @@ public class RegisterController {
         }
     }
 
-    // ===== MÉTHODE handleBackToLogin =====
+    // méthode handleBackToLogin
     @FXML
     private void handleBackToLogin(ActionEvent event) {
         redirectToLogin();
     }
 
-    // ===== VALIDATION =====
+    // validation
 
     private boolean validateForm(String username, String password, String confirmPassword) {
-        // Vérifier les termes
         if (!termsCheckbox.isSelected()) {
             showError("Vous devez accepter les conditions d'utilisation");
             return false;
         }
 
-        // Valider le nom d'utilisateur
         if (username.isEmpty()) {
             showError("Le nom d'utilisateur est obligatoire");
             usernameField.requestFocus();
@@ -147,7 +143,6 @@ public class RegisterController {
             return false;
         }
 
-        // Valider le mot de passe
         if (password.isEmpty()) {
             showError("Le mot de passe est obligatoire");
             passwordField.requestFocus();
@@ -160,7 +155,6 @@ public class RegisterController {
             return false;
         }
 
-        // Vérifier la confirmation
         if (!password.equals(confirmPassword)) {
             showError("Les mots de passe ne correspondent pas");
             confirmPasswordField.requestFocus();
@@ -234,15 +228,14 @@ public class RegisterController {
 
     private void checkFirstUser() {
         try {
-            // Si c'est le premier utilisateur, il devient automatiquement admin
-            int userCount = userDAO.countAll();
+            // si aucun user → premier compte = admin
+            int userCount = userDAO.getAllUsers().size(); 
 
             if (userCount == 0) {
-                // Premier utilisateur = admin automatiquement
                 roleContainer.setVisible(true);
                 roleContainer.setManaged(true);
                 adminRoleRadio.setSelected(true);
-                adminRoleRadio.setDisable(true); // Forcer admin pour le premier
+                adminRoleRadio.setDisable(true); // premier user forcé admin
             }
 
         } catch (Exception e) {
@@ -250,11 +243,9 @@ public class RegisterController {
         }
     }
 
-    // ===== MÉTHODES UTILITAIRES =====
-
     private void redirectToLogin() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fr/ece/view/login.fxml"));
             Scene scene = new Scene(loader.load());
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
