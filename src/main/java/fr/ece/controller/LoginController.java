@@ -79,7 +79,7 @@ public class LoginController {
     private void handleRegister(ActionEvent event) {
       
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fr/ece/view/register.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/fr/ece/view/login.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
