@@ -1,38 +1,51 @@
 package fr.ece.model;
 
-// Classe représentant un utilisateur (USER ou ADMIN)
+import java.time.LocalDateTime;
+
 public class User {
+
+    public enum Role {
+        USER,
+        ADMIN
+    }
 
     private int id;                 // identifiant unique en BDD
     private String username;        // nom d'utilisateur pour la connexion
-    private String passwordHash;    // mot de passe hashé
-    private String role;            // USER ou ADMIN
+    private String passwordHash;    // mot de passe déjà hashé avec BCrypt
+    private Role role;              // USER ou ADMIN 
+
+    // timestamps BDD
+    private LocalDateTime createdAt;   // correspond à created_at
+    private LocalDateTime updatedAt;   // correspond à updated_at 
 
     public User() {
     }
-
-    // Constructeur avec id
-    public User(int id, String username, String passwordHash, String role) {
+    
+    public User(int id, String username, String passwordHash, Role role,
+                LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.username = username;
         this.passwordHash = passwordHash;
         this.role = role;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    // Constructeur sans id
-    public User(String username, String passwordHash, String role) {
+
+    public User(String username, String passwordHash, Role role) {
         this.username = username;
         this.passwordHash = passwordHash;
         this.role = role;
     }
 
-    // Getters et Setters
+    // getter et setter
+
     public int getId() {
         return id;
     }
 
     public void setId(int id) {
-        this.id = id;
+        this.id = id; 
     }
 
     public String getUsername() {
@@ -51,19 +64,39 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setRole(Role role) {
+        this.role = role; // USER ou ADMIN
     }
 
+    public String getRoleAsString() {
+        return (role != null) ? role.name() : null;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt; 
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt; 
+    }
+
+    @Override
     public String toString() {
         return "User { id=" + id +
                 ", username='" + username + "'" +
-                ", role='" + role + "'" +
+                ", role=" + role +
                 " }";
     }
-
 }
