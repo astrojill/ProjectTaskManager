@@ -3,46 +3,60 @@ package fr.ece.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-// Classe Task
 public class Task {
 
-    // Attributs principaux (liés à la BDD)
-    private int id;                // id AUTO_INCREMENT
-    private String title;          // titre de la tâche
-    private String description;    // description détaillée
-    private LocalDate dueDate;     // date limite (colonne due_date)
+    // Enum pour le statut (correspond à ENUM('TODO', 'IN_PROGRESS', 'DONE', 'CANCELLED'))
+    public enum Status {
+        TODO,
+        IN_PROGRESS,
+        DONE,
+        CANCELLED
+    }
 
-    // status : TODO / IN_PROGRESS / DONE / CANCELLED
-    private String status;
+    // Enum pour la priorité (ENUM('LOW','MEDIUM','HIGH'))
+    public enum Priority {
+        LOW,
+        MEDIUM,
+        HIGH
+    }
 
-    // priority : LOW / MEDIUM / HIGH
-    private String priority;
+    // ---- Champs liés à la BDD ----
+    private int id;                     // id AUTO_INCREMENT
+    private String title;               // titre de la tâche
+    private String description;         // description détaillée
+    private LocalDate dueDate;          // date d'échéance (due_date)
+    private Status status;              // TODO / IN_PROGRESS / DONE / CANCELLED
+    private Priority priority;          // LOW / MEDIUM / HIGH
 
-    // Relation avec les autres tables
-    private Category category;     // correspond à category_id (peut être null)
-    private User user;             // correspond à user_id
+    // Relations
+    private Category category;          // catégorie liée (peut être null si category_id = null)
+    private User user;                  // utilisateur propriétaire (user_id NOT NULL)
 
-    // Champs de suivi (timestamps BDD)
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    // Timestamps
+    private LocalDateTime createdAt;    // created_at
+    private LocalDateTime updatedAt;    // updated_at
 
-
-    // Constructeur vide
     public Task() {
     }
 
-    // Constructeur complet avec id (pour les objets venant de la BDD)
-    public Task(int id,
-                String title,
-                String description,
-                LocalDate dueDate,
-                String status,
-                String priority,
-                Category category,
-                User user,
-                LocalDateTime createdAt,
-                LocalDateTime updatedAt) {
+    // Constructeur pratique sans id/timestamps 
+    public Task(String title, String description, LocalDate dueDate,
+                Status status, Priority priority,
+                Category category, User user) {
+        this.title = title;
+        this.description = description;
+        this.dueDate = dueDate;
+        this.status = status;
+        this.priority = priority;
+        this.category = category;
+        this.user = user;
+    }
 
+    // Constructeur complet avec id + timestamps (quand ça vient de la BDD)
+    public Task(int id, String title, String description, LocalDate dueDate,
+                Status status, Priority priority,
+                Category category, User user,
+                LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -55,31 +69,14 @@ public class Task {
         this.updatedAt = updatedAt;
     }
 
-    // Constructeur sans id ni timestamps (pour créer une nouvelle tâche)
-    public Task(String title,
-                String description,
-                LocalDate dueDate,
-                String status,
-                String priority,
-                Category category,
-                User user) {
-
-        this.title = title;
-        this.description = description;
-        this.dueDate = dueDate;
-        this.status = status;
-        this.priority = priority;
-        this.category = category;
-        this.user = user;
-    }
-
-    // Getters et setters
+    // getters et setters
 
     public int getId() {
         return id;
     }
 
     public void setId(int id) {
+        // c'est la BDD qui le met (AUTO_INCREMENT)
         this.id = id;
     }
 
@@ -107,21 +104,28 @@ public class Task {
         this.dueDate = dueDate;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    // on pourra vérifier plus tard que la valeur est bien dans l'ENUM
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
-    public String getPriority() {
+    public String getStatusAsString() {
+        return (status != null) ? status.name() : null;
+    }
+
+    public Priority getPriority() {
         return priority;
     }
 
-    public void setPriority(String priority) {
+    public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public String getPriorityAsString() {
+        return (priority != null) ? priority.name() : null;
     }
 
     public Category getCategory() {
@@ -129,7 +133,7 @@ public class Task {
     }
 
     public void setCategory(Category category) {
-        this.category = category; // peut être null (si la tâche n’a pas de catégorie)
+        this.category = category;
     }
 
     public User getUser() {
@@ -137,7 +141,8 @@ public class Task {
     }
 
     public void setUser(User user) {
-        this.user = user; // en BDD, user_id est NOT NULL
+        // Tats : user_id NOT NULL → normalement toujours un user
+        this.user = user;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -159,9 +164,8 @@ public class Task {
     public String toString() {
         return "Task { id=" + id +
                 ", title='" + title + "'" +
-                ", status='" + status + "'" +
-                ", priority='" + priority + "'" +
+                ", status=" + status +
+                ", priority=" + priority +
                 " }";
     }
-
 }
