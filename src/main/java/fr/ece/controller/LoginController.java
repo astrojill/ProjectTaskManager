@@ -1,7 +1,7 @@
 package fr.ece.controller;
 
 import fr.ece.dao.UserDAO;
-import model.User;
+import fr.ece.model.User;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
