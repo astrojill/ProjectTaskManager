@@ -1,9 +1,9 @@
 package fr.ece.dao;
 
-import model.Task;
-import model.Task.Status;
-import model.Task.Priority;
-import util.Database;
+import fr.ece.model.Task;
+import fr.ece.model.Task.Status;
+import fr.ece.model.Task.Priority;
+import fr.ece.util.DatabaseConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
 
 public class TaskDAO {
 
-/**
+    /**
      * Ajoute une nouvelle tâche dans la base de données
      * @param task La tâche à ajouter
      * @return true si l'ajout a réussi, false sinon
@@ -19,7 +19,7 @@ public class TaskDAO {
     public boolean addTask(Task task) throws SQLException {
         String sql = "INSERT INTO tasks (title, description, due_date, status, priority, category_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         // RETURN_GENERATED_KEYS permet de récupérer l'ID auto-généré
         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
@@ -59,7 +59,7 @@ public class TaskDAO {
     public Task getTaskById(int id) throws SQLException {
         String sql = "SELECT * FROM tasks WHERE id = ?";
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, id);
 
@@ -86,7 +86,7 @@ public class TaskDAO {
         String sql = "SELECT * FROM tasks WHERE user_id = ? ORDER BY due_date ASC, priority DESC";
         List<Task> tasks = new ArrayList<>();
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, userId);
 
@@ -112,7 +112,7 @@ public class TaskDAO {
     public boolean updateTask(Task task) throws SQLException {
         String sql = "UPDATE tasks SET title = ?, description = ?, due_date = ?, status = ?, priority = ?, category_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?";
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
 
         ps.setString(1, task.getTitle());
@@ -140,7 +140,7 @@ public class TaskDAO {
     public boolean deleteTask(int id) throws SQLException {
         String sql = "DELETE FROM tasks WHERE id = ?";
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, id);
 
@@ -162,7 +162,7 @@ public class TaskDAO {
         String sql = "SELECT * FROM tasks WHERE user_id = ? AND status = ? ORDER BY due_date ASC";
         List<Task> tasks = new ArrayList<>();
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, userId);
         ps.setString(2, status);
@@ -190,7 +190,7 @@ public class TaskDAO {
         String sql = "SELECT * FROM tasks WHERE user_id = ? AND category_id = ? ORDER BY due_date ASC";
         List<Task> tasks = new ArrayList<>();
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, userId);
         ps.setInt(2, categoryId);
