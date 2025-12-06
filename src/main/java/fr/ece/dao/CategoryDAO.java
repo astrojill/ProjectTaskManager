@@ -1,14 +1,14 @@
 package fr.ece.dao;
 
-import model.Category;
-import util.Database;
+import fr.ece.model.Category;
+import fr.ece.util.DatabaseConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryDAO {
 
-  /**
+    /**
      * Ajoute une nouvelle catégorie dans la base de données
      * @param category La catégorie à ajouter
      * @return true si l'ajout a réussi, false sinon
@@ -16,7 +16,7 @@ public class CategoryDAO {
     public boolean addCategory(Category category) throws SQLException {
         String sql = "INSERT INTO categories (name) VALUES (?)";
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         // RETURN_GENERATED_KEYS permet de récupérer l'ID auto-généré
         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
@@ -48,7 +48,7 @@ public class CategoryDAO {
         String sql = "SELECT id, name FROM categories ORDER BY name ASC";
         List<Category> categories = new ArrayList<>();
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
         ResultSet rs = ps.executeQuery();
 
@@ -75,7 +75,7 @@ public class CategoryDAO {
     public Category getCategoryById(int id) throws SQLException {
         String sql = "SELECT id, name FROM categories WHERE id = ?";
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, id);
 
@@ -103,7 +103,7 @@ public class CategoryDAO {
     public boolean updateCategory(Category category) throws SQLException {
         String sql = "UPDATE categories SET name = ? WHERE id = ?";
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
 
         ps.setString(1, category.getName());
@@ -125,7 +125,7 @@ public class CategoryDAO {
     public boolean deleteCategory(int id) throws SQLException {
         String sql = "DELETE FROM categories WHERE id = ?";
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, id);
 
