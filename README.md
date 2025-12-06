@@ -23,6 +23,8 @@ src/<br>
 │  │        │    ├─ DashboardController.java<br>
 │  │        │    ├─ TaskController.java<br>
 │  │        │    └─ CategoryController.java<br>
+│  │        │    └─ RegisterController.java<br>
+│  │        │    └─ UserManagementController.java<br>
 │  │        └─ util/<br>
 │  │             ├─ DatabaseConnection.java<br>
 │  │             └─ PasswordUtils.java<br>
@@ -32,6 +34,8 @@ src/<br>
 │     │    ├─ dashboard.fxml<br>
 │     │    ├─ task.fxml<br>
 │     │    └─ category.fxml<br>
+│     │    └─ register.fxml<br>
+│     │    └─ user-management.fxml<br>
 │     ├─ css/<br>
 │     │    └─ styles.css<br>
 │     └─ config.properties<br>
