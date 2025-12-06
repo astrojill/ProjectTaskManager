@@ -11,27 +11,27 @@ src/<br>
 │  │     └─ ece/<br>
 │  │        ├─ Main.java<br>
 │  │        ├─ model/<br>
-│  │        │  ├─ User.java<br>
-│  │        │  ├─ Task.java<br>
-│  │        │  └─ Category.java<br>
+│  │        │    ├─ User.java<br>
+│  │        │    ├─ Task.java<br>
+│  │        │    └─ Category.java<br>
 │  │        ├─ dao/<br>
-│  │        │  ├─ UserDAO.java<br>
-│  │        │  ├─ TaskDAO.java<br>
-│  │        │  └─ CategoryDAO.java<br>
+│  │        │    ├─ UserDAO.java<br>
+│  │        │    ├─ TaskDAO.java<br>
+│  │        │    └─ CategoryDAO.java<br>
 │  │        ├─ controller/<br>
-│  │        │  ├─ LoginController.java<br>
-│  │        │  ├─ DashboardController.java<br>
-│  │        │  ├─ TaskController.java<br>
-│  │        │  └─ CategoryController.java<br>
+│  │        │    ├─ LoginController.java<br>
+│  │        │    ├─ DashboardController.java<br>
+│  │        │    ├─ TaskController.java<br>
+│  │        │    └─ CategoryController.java<br>
 │  │        └─ util/<br>
-│  │           ├─ DatabaseConnection.java<br>
-│  │           └─ PasswordUtils.java<br>
+│  │             ├─ DatabaseConnection.java<br>
+│  │             └─ PasswordUtils.java<br>
 │  └─ resources/<br>
 │     ├─ fxml/<br>
-│     │  ├─ login.fxml<br>
-│     │  ├─ dashboard.fxml<br>
-│     │  ├─ task.fxml<br>
-│     │  └─ category.fxml<br>
+│     │    ├─ login.fxml<br>
+│     │    ├─ dashboard.fxml<br>
+│     │    ├─ task.fxml<br>
+│     │    └─ category.fxml<br>
 │     ├─ css/<br>
-│     │  └─ styles.css<br>
+│     │    └─ styles.css<br>
 │     └─ config.properties<br>
