@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="fr.ece.controller.UserManagementController"
+            prefHeight="700.0" prefWidth="1000.0"
+            stylesheets="@../css/styles.css"
+            styleClass="root">
+
+    <!-- Top Bar -->
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-bar">
+                <padding>
+                    <Insets top="15" right="20" bottom="15" left="20"/>
+                </padding>
+
+                <Button text="← Retour au Dashboard"
+                        onAction="#handleBack"
+                        styleClass="back-button"/>
+
+                <Text text="Gestion des Utilisateurs" styleClass="page-title"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label fx:id="currentUserLabel" styleClass="user-label"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Main Content -->
+    <center>
+        <VBox spacing="20" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Statistics Cards -->
+            <HBox spacing="20" alignment="CENTER">
+                <!-- Total Users -->
+                <VBox styleClass="stat-card" spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20"/>
+                    </padding>
+                    <Text text="Total Utilisateurs" styleClass="stat-label"/>
+                    <Text fx:id="totalUsersLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+
+                <!-- Admin Users -->
+                <VBox styleClass="stat-card-warning" spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20"/>
+                    </padding>
+                    <Text text="Administrateurs" styleClass="stat-label"/>
+                    <Text fx:id="adminUsersLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+
+                <!-- Regular Users -->
+                <VBox styleClass="stat-card-info" spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20"/>
+                    </padding>
+                    <Text text="Utilisateurs" styleClass="stat-label"/>
+                    <Text fx:id="regularUsersLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+
+                <!-- Active Today -->
+                <VBox styleClass="stat-card-success" spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20"/>
+                    </padding>
+                    <Text text="Actifs Aujourd'hui" styleClass="stat-label"/>
+                    <Text fx:id="activeUsersLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+            </HBox>
+
+            <!-- Actions Bar -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <!-- Search -->
+                <TextField fx:id="searchField"
+                           promptText="Rechercher un utilisateur..."
+                           prefWidth="300"
+                           onKeyReleased="#handleSearch"/>
+
+                <!-- Filter -->
+                <Label text="Filtrer par:" styleClass="filter-label"/>
+                <ComboBox fx:id="filterComboBox"
+                          promptText="Tous"
+                          onAction="#handleFilterChange"
+                          prefWidth="150"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Add User Button -->
+                <Button text="+ Nouvel Utilisateur"
+                        onAction="#handleAddUser"
+                        styleClass="primary-button"/>
+            </HBox>
+
+            <!-- Users Table -->
+            <TableView fx:id="usersTable" VBox.vgrow="ALWAYS" styleClass="table-view">
+                <columns>
+                    <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="usernameColumn" text="Nom d'utilisateur" prefWidth="200"/>
+                    <TableColumn fx:id="emailColumn" text="Email" prefWidth="250"/>
+                    <TableColumn fx:id="roleColumn" text="Rôle" prefWidth="120"/>
+                    <TableColumn fx:id="createdAtColumn" text="Date création" prefWidth="150"/>
+                    <TableColumn fx:id="tasksCountColumn" text="Tâches" prefWidth="80"/>
+                    <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="250"/>
+                </columns>
+                <placeholder>
+                    <Label text="Aucun utilisateur trouvé" styleClass="placeholder-label"/>
+                </placeholder>
+            </TableView>
+
+            <!-- Action Buttons -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text="Modifier le rôle"
+                        onAction="#handleChangeRole"
+                        styleClass="secondary-button"
+                        fx:id="changeRoleButton"
+                        disable="true"/>
+
+                <Button text="Réinitialiser mot de passe"
+                        onAction="#handleResetPassword"
+                        styleClass="secondary-button"
+                        fx:id="resetPasswordButton"
+                        disable="true"/>
+
+                <Button text="Supprimer"
+                        onAction="#handleDeleteUser"
+                        styleClass="danger-button"
+                        fx:id="deleteButton"
+                        disable="true"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label fx:id="countLabel" text="0 utilisateurs" styleClass="count-label"/>
+            </HBox>
+        </VBox>
+    </center>
+
+    <!-- Status Bar -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="status-bar">
+            <padding>
+                <Insets top="10" right="20" bottom="10" left="20"/>
+            </padding>
+            <Label fx:id="statusLabel" text="Prêt" styleClass="status-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="⚠ Attention: La suppression d'un utilisateur supprime aussi ses tâches"
+                   style="-fx-font-size: 11px; -fx-text-fill: #e74c3c;"/>
+        </HBox>
+    </bottom>
+</BorderPane>
