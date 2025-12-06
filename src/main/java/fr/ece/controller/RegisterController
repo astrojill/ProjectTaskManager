@@ -81,13 +81,13 @@ public class RegisterController {
 
             // Hasher le mot de passe
             String hashedPassword = PasswordUtils.hashPassword(password);
-            newUser.setPassword(hashedPassword);
+            newUser.setPasswordHash(hashedPassword);
 
             // Déterminer le rôle
             if (roleContainer.isVisible() && adminRoleRadio.isSelected()) {
-                newUser.setRole("ADMIN");
+                newUser.setRole(User.Role.ADMIN);
             } else {
-                newUser.setRole("USER");
+                newUser.setRole(User.Role.USER);
             }
 
             // 5. Sauvegarder dans la base de données
