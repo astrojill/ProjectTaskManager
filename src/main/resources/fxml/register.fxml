@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="fr.ece.controller.RegisterController"
+            prefHeight="600.0" prefWidth="450.0"
+            stylesheets="@../css/styles.css"
+            styleClass="root">
+
+    <VBox alignment="CENTER" spacing="25" AnchorPane.topAnchor="0"
+          AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0"
+          AnchorPane.rightAnchor="0">
+
+        <padding>
+            <Insets top="40" right="40" bottom="40" left="40"/>
+        </padding>
+
+        <!-- Header -->
+        <VBox alignment="CENTER" spacing="10">
+            <Text text="Créer un compte" styleClass="title"/>
+            <Text text="Rejoignez Task Manager" styleClass="subtitle"/>
+        </VBox>
+
+        <!-- Form -->
+        <VBox spacing="20" styleClass="form-container">
+            <!-- Username Field -->
+            <VBox spacing="5">
+                <Label text="Nom d'utilisateur *" styleClass="form-label"/>
+                <TextField fx:id="usernameField"
+                           promptText="Choisissez un nom d'utilisateur"
+                           styleClass="text-field"/>
+                <Label fx:id="usernameHint"
+                       text="3 caractères minimum, lettres et chiffres uniquement"
+                       styleClass="hint-label"
+                       style="-fx-font-size: 11px; -fx-text-fill: #7f8c8d;"/>
+            </VBox>
+
+            <!-- Email Field (optionnel) -->
+            <VBox spacing="5">
+                <Label text="Email (optionnel)" styleClass="form-label"/>
+                <TextField fx:id="emailField"
+                           promptText="votre.email@exemple.com"
+                           styleClass="text-field"/>
+            </VBox>
+
+            <!-- Password Field -->
+            <VBox spacing="5">
+                <Label text="Mot de passe *" styleClass="form-label"/>
+                <PasswordField fx:id="passwordField"
+                               promptText="Choisissez un mot de passe sécurisé"
+                               styleClass="text-field"/>
+                <Label fx:id="passwordStrength"
+                       text="Minimum 8 caractères"
+                       styleClass="hint-label"
+                       style="-fx-font-size: 11px; -fx-text-fill: #7f8c8d;"/>
+            </VBox>
+
+            <!-- Confirm Password Field -->
+            <VBox spacing="5">
+                <Label text="Confirmer le mot de passe *" styleClass="form-label"/>
+                <PasswordField fx:id="confirmPasswordField"
+                               promptText="Retapez votre mot de passe"
+                               styleClass="text-field"/>
+            </VBox>
+
+            <!-- Role Selection (visible uniquement si premier utilisateur ou admin) -->
+            <VBox spacing="5" fx:id="roleContainer" visible="false" managed="false">
+                <Label text="Rôle" styleClass="form-label"/>
+                <HBox spacing="15">
+                    <RadioButton fx:id="userRoleRadio" text="Utilisateur"
+                                 toggleGroup="$roleGroup" selected="true"/>
+                    <RadioButton fx:id="adminRoleRadio" text="Administrateur"
+                                 toggleGroup="$roleGroup"/>
+                </HBox>
+                <Label text="Note: Le premier utilisateur sera automatiquement administrateur"
+                       style="-fx-font-size: 11px; -fx-text-fill: #7f8c8d;"/>
+            </VBox>
+
+            <!-- Terms Checkbox -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <CheckBox fx:id="termsCheckbox"/>
+                <Text text="J'accepte les conditions d'utilisation"
+                      style="-fx-font-size: 12px; -fx-fill: #34495e;"/>
+            </HBox>
+
+            <!-- Error/Success Label -->
+            <Label fx:id="messageLabel"
+                   styleClass="message-label"
+                   wrapText="true"
+                   visible="false"
+                   managed="false"/>
+
+            <!-- Register Button -->
+            <Button text="Créer mon compte"
+                    onAction="#handleRegister"
+                    styleClass="primary-button"
+                    maxWidth="Infinity"
+                    prefHeight="40"/>
+
+            <!-- Back to Login Link -->
+            <HBox alignment="CENTER" spacing="5">
+                <Text text="Vous avez déjà un compte ?" styleClass="link-text"/>
+                <Hyperlink text="Se connecter"
+                           onAction="#handleBackToLogin"
+                           styleClass="hyperlink"/>
+            </HBox>
+        </VBox>
+
+        <!-- Footer -->
+        <Text text="© 2025 Task Manager - ECE" styleClass="footer-text"/>
+    </VBox>
+</AnchorPane>
