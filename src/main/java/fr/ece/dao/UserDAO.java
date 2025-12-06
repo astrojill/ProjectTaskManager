@@ -1,16 +1,15 @@
 package fr.ece.dao;
 
-import model.User;
-import model.User.Role;
-import util.Database;
-import util.PasswordUtils;
+import fr.ece.model.User;
+import fr.ece.util.DatabaseConnection;
+import fr.ece.util.PasswordUtils;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDAO {
 
-  /**
+    /**
      * Authentifie un utilisateur avec son nom d'utilisateur et mot de passe
      * @param username Le nom d'utilisateur
      * @param password Le mot de passe en clair
@@ -36,7 +35,7 @@ public class UserDAO {
         String sql = "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)";
 
         // Obtenir la connexion à la base de données
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement pstmt = conn.prepareStatement(sql);
 
         // Remplir les paramètres de la requête
@@ -62,7 +61,7 @@ public class UserDAO {
     public User getUserById(int id) throws SQLException {
         String sql = "SELECT * FROM users WHERE id = ?";
 
-        Connection conn = Database.getConnection();
+        Connection conn = DatabaseConnection.getConnection();
         PreparedStatement pstmt = conn.prepareStatement(sql);
         pstmt.setInt(1, id);
 
