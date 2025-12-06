@@ -1,6 +1,6 @@
 package fr.ece.controller;
 
-import java.util.List;
+import fr.ece.dao;
 
 // (ce sera appelé par l'interface graphique plus tard)
 public class CategoryController {
