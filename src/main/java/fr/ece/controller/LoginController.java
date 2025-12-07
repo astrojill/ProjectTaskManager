@@ -79,7 +79,7 @@ public class LoginController {
     private void handleRegister(ActionEvent event) {
 
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fr/ece/view/register.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/register.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
@@ -93,7 +93,7 @@ public class LoginController {
     private void goToDashboard(ActionEvent event) {
         // on adapte vers le bon fxml
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fr/ece/view/dashboard.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/dashboard.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
