@@ -379,12 +379,9 @@ public class TaskController {
             return;
         }
 
-        isEditMode = true;
-        formTitle.setText("Modifier la tâche");
-        setFormFieldsDisabled(false);
-        updateStatusBar("Modification de la tâche...");
+        // Utilise la nouvelle méthode pour initialiser l'édition
+        setTaskToEdit(selectedTask);
     }
-
     /**
      * Enregistrer une tâche (création ou modification)
      */
@@ -610,6 +607,46 @@ public class TaskController {
     private void hideMessage() {
         messageLabel.setVisible(false);
         messageLabel.setManaged(false);
+    }
+
+    /**
+     * Définit la tâche à modifier et initialise le formulaire en mode édition.
+     * Si task est null, initialise le formulaire pour une nouvelle tâche.
+     */
+    public void setTaskToEdit(Task task) {
+        if (task != null) {
+            // Mode modification
+            this.selectedTask = task;
+            this.isEditMode = true;
+            formTitle.setText("Modifier la tâche #" + task.getId());
+
+            // Afficher les détails dans les champs
+            titleField.setText(task.getTitle());
+            descriptionArea.setText(task.getDescription());
+            dueDatePicker.setValue(task.getDueDate());
+            statusComboBox.setValue(task.getStatus());
+            priorityComboBox.setValue(task.getPriority());
+
+            // Trouver et sélectionner la catégorie correspondante
+            if (task.getCategoryId() != null) {
+                categoryComboBox.getItems().stream()
+                        // CORRECTION APPLIQUÉE ICI : Utilisation de == au lieu de != null et equals()
+                        .filter(c -> c != null && c.getId() == task.getCategoryId())
+                        .findFirst()
+                        .ifPresent(categoryComboBox::setValue);
+            } else {
+                categoryComboBox.setValue(null);
+            }
+
+            // Activer les champs pour l'édition
+            setFormFieldsDisabled(false);
+            tasksTable.getSelectionModel().select(task); // Sélectionner dans le tableau
+            updateStatusBar("Modification de la tâche...");
+
+        } else {
+            // Mode création
+            handleNew(); // Utilise la méthode existante pour la création
+        }
     }
 
     /**
