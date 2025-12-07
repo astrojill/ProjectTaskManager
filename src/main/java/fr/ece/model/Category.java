@@ -1,33 +1,41 @@
 package fr.ece.model;
 
-// Classe Category
+import java.time.LocalDateTime;
+
 public class Category {
 
-    private int id;        // identifiant unique dans la BDD
-    private String name;   // nom de la catégorie
+    private int id;                // identifiant unique (AUTO_INCREMENT dans la BDD)
+    private String name;           // nom de la catégorie (doit être unique)
 
-    // Constructeur vide → quand on veut créer l'objet petit à petit
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
     public Category() {
     }
 
-    // Constructeur avec id → quand ça vient de la BDD
-    public Category(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    // Constructeur sans id → quand on crée une nouvelle catégorie
+    // Constructeur pratique quand on crée une nouvelle catégorie
     public Category(String name) {
         this.name = name;
     }
 
-    // Getters & Setters
+    // Constructeur complet
+    public Category(int id, String name,
+                    LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
+        this.name = name;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    // getters et setters
+
     public int getId() {
         return id;
     }
 
     public void setId(int id) {
-        this.id = id;  // id assigné par la BDD
+        // la BDD le génère toute seule (AUTO_INCREMENT), donc on fait juste un set ici
+        this.id = id;
     }
 
     public String getName() {
@@ -35,14 +43,26 @@ public class Category {
     }
 
     public void setName(String name) {
-        this.name = name;  // mise à jour du nom (au cas où l'admin modifie)
+        this.name = name;
     }
 
-    @Override
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public String toString() {
-        return "Category { id=" + id +
-                ", name='" + name + "'" +
-                " }";
+        return name;
     }
-
 }

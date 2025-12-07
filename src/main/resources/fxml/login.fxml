@@ -66,8 +66,5 @@
                            styleClass="hyperlink"/>
             </HBox>
         </VBox>
-
-        <!-- Footer -->
-        <Text text="© 2025 Task Manager - ECE" styleClass="footer-text"/>
     </VBox>
 </AnchorPane>

@@ -197,10 +197,15 @@ public class TaskController {
      * Charge les catégories dans le ComboBox
      */
     private void loadCategories() {
-        List<Category> categories = categoryDAO.getAllCategories();
-        categoryComboBox.getItems().clear();
-        categoryComboBox.getItems().add(null); // Option "Aucune catégorie"
-        categoryComboBox.getItems().addAll(categories);
+        try {
+            List<Category> categories = categoryDAO.getAllCategories();
+            categoryComboBox.getItems().clear();
+            categoryComboBox.getItems().add(null); // Option "Aucune catégorie"
+            categoryComboBox.getItems().addAll(categories);
+        } catch (SQLException e) {
+            showError("Erreur lors du chargement des catégories : " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**

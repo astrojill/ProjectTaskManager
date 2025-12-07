@@ -241,4 +241,26 @@ public class TaskDAO {
 
         return task;
     }
+
+    public int countByUser(int userId) {
+        String sql = "SELECT COUNT(*) FROM tasks WHERE assigned_to = ? OR created_by = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            stmt.setInt(2, userId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0; // en cas d’erreur
+    }
 }

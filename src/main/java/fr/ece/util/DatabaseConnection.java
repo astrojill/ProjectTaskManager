@@ -1,32 +1,69 @@
 package fr.ece.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-// Utility class for database connection.
+import java.util.Properties;
 
 public class DatabaseConnection {
+    private static String DB_URL;
+    private static String DB_USER;
+    private static String DB_PASSWORD;
+    private static String DRIVER;
 
-    // Make sure your server running and database exists.
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/task_manager_db?allowMultiQueries=true&useSSL=false&serverTimezone=UTC";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
-    private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
+    static {
+        loadProperties();
+    }
+
+    private static void loadProperties() {
+        Properties properties = new Properties();
+
+        try (InputStream input = DatabaseConnection.class
+                .getClassLoader()
+                .getResourceAsStream("config.properties")) {
+
+            if (input == null) {
+                System.err.println("Unable to find config.properties");
+                // Fall back
+                DB_URL = "jdbc:mysql://localhost:3306/task_manager_db?allowMultiQueries=true&useSSL=false&serverTimezone=UTC";
+                DB_USER = "root";
+                DB_PASSWORD = "";
+                DRIVER = "com.mysql.cj.jdbc.Driver";
+                return;
+            }
+
+            properties.load(input);
+
+            DB_URL = properties.getProperty("db.url");
+            DB_USER = properties.getProperty("db.username");
+            DB_PASSWORD = properties.getProperty("db.password");
+            DRIVER = properties.getProperty("db.driver", "com.mysql.cj.jdbc.Driver"); // Default driver if unspecified
+
+            System.out.println("Database configuration loaded from config.properties");
+
+        } catch (IOException e) {
+            System.err.println("Error loading config.properties: " + e.getMessage());
+
+            DB_URL = "jdbc:mysql://localhost:3306/task_manager_db?allowMultiQueries=true&useSSL=false&serverTimezone=UTC";
+            DB_USER = "root";
+            DB_PASSWORD = "";
+            DRIVER = "com.mysql.cj.jdbc.Driver";
+        }
+    }
 
     public static Connection getConnection() throws SQLException {
         Connection connection = null;
         try {
-            // 1. Load the MySQL JDBC driver class
+            // Load the MySQL JDBC driver class
             Class.forName(DRIVER);
 
-            // 2. Establish the connection
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
             System.out.println("Database connection established successfully.");
 
-            // 3. Create tables if they do not exist
             createTables(connection);
 
             return connection;
@@ -35,7 +72,7 @@ public class DatabaseConnection {
             throw new SQLException("JDBC Driver not found: " + e.getMessage());
         } catch (SQLException e) {
             System.err.println("Database connection failed or table creation failed.");
-            close(null, null, connection); // Ensure connection is closed on failure
+            close(null, null, connection); // Connection closed if failure
             throw e;
         }
     }
