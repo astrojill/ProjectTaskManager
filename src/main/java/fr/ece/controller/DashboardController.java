@@ -41,8 +41,8 @@ public class DashboardController {
     @FXML private TableColumn<Task, String> priorityColumn;
     @FXML private TableColumn<Task, String> categoryColumn;
     @FXML private Button manageCategoriesButton;
+    @FXML private Button manageUsersButton;
     
-    // Éléments de filtrage
     @FXML private TextField searchField;
     @FXML private ComboBox<String> statusFilterCombo;
     @FXML private ComboBox<String> priorityFilterCombo;
@@ -60,21 +60,19 @@ public class DashboardController {
     private static final String LOGIN_VIEW_PATH = "/fr/ece/view/LoginView.fxml";
     private static final String CATEGORY_VIEW_PATH = "/fr/ece/view/CategoryView.fxml";
     private static final String TASK_VIEW_PATH = "/fr/ece/view/TaskView.fxml";
+    private static final String USER_MANAGEMENT_VIEW_PATH = "/fr/ece/view/UserManagementView.fxml";
 
     @FXML
     public void initialize() {
-        // Configuration colonnes table
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
         
-        // Initialisation liste filtrée
         filteredTaskList = new FilteredList<>(taskList, p -> true);
         taskTableView.setItems(filteredTaskList);
         
-        // Configuration double-clic sur table
         taskTableView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2 && !taskTableView.getSelectionModel().isEmpty()) {
                 Task selectedTask = taskTableView.getSelectionModel().getSelectedItem();
@@ -82,6 +80,7 @@ public class DashboardController {
             }
         });
         
+        // Initialisation des ComboBox de filtrage (si présents dans la vue FXML)
         if (statusFilterCombo != null) {
             statusFilterCombo.getItems().addAll("Tous", "TODO", "IN_PROGRESS", "DONE", "CANCELLED");
             statusFilterCombo.setValue("Tous");
@@ -100,12 +99,10 @@ public class DashboardController {
             categoryFilterCombo.setOnAction(e -> applyFilters());
         }
         
-        // Listener pour la recherche de texte
         if (searchField != null) {
             searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
         }
         
-        // Listener pour les tâches en retard
         if (overdueCheckBox != null) {
             overdueCheckBox.setOnAction(e -> applyFilters());
         }
@@ -115,12 +112,16 @@ public class DashboardController {
         this.currentUser = user;
         welcomeLabel.setText("Bienvenue, " + user.getUsername() + " !");
         
-        // Masquer le bouton de gestion des catégories pour les utilisateurs non-ADMIN
-        manageCategoriesButton.setVisible(user.getRole() == Role.ADMIN);
+        // Masquer les boutons d'administration pour les utilisateurs non-ADMIN
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        manageCategoriesButton.setVisible(isAdmin);
+        if (manageUsersButton != null) {
+            manageUsersButton.setVisible(isAdmin);
+        }
         
         refreshDashboardData();
     }
-
+    
     public void refreshDashboardData() {
         try {
             List<Task> fetchedTasks = taskDAO.getTasksByUserId(currentUser.getId()); 
@@ -147,10 +148,13 @@ public class DashboardController {
                 }
             });
 
+            // Mise à jour de la liste principale
             taskList.setAll(fetchedTasks);
             
+            // Mise à jour des statistiques avec toutes les tâches (non filtrées)
             updateTaskStatistics(fetchedTasks);
             
+            // Réappliquer les filtres existants
             applyFilters();
 
         } catch (SQLException e) {
@@ -174,6 +178,7 @@ public class DashboardController {
     @FXML
     private void applyFilters() {
         filteredTaskList.setPredicate(task -> {
+            // Filtre par recherche de texte
             if (searchField != null && !searchField.getText().isEmpty()) {
                 String searchText = searchField.getText().toLowerCase();
                 boolean matchesSearch = task.getTitle().toLowerCase().contains(searchText) ||
@@ -183,18 +188,21 @@ public class DashboardController {
                 }
             }
             
+            // Filtre par statut
             if (statusFilterCombo != null && !statusFilterCombo.getValue().equals("Tous")) {
                 if (!task.getStatus().name().equals(statusFilterCombo.getValue())) {
                     return false;
                 }
             }
             
+            // Filtre par priorité
             if (priorityFilterCombo != null && !priorityFilterCombo.getValue().equals("Tous")) {
                 if (!task.getPriority().name().equals(priorityFilterCombo.getValue())) {
                     return false;
                 }
             }
             
+            // Filtre par catégorie
             if (categoryFilterCombo != null && !categoryFilterCombo.getValue().equals("Toutes")) {
                 String selectedCategory = categoryFilterCombo.getValue();
                 if (task.getCategoryName() == null || !task.getCategoryName().equals(selectedCategory)) {
@@ -202,6 +210,7 @@ public class DashboardController {
                 }
             }
             
+            // Filtre pour les tâches en retard
             if (overdueCheckBox != null && overdueCheckBox.isSelected()) {
                 if (task.getDueDate() == null || !task.getDueDate().isBefore(LocalDate.now())) {
                     return false;
@@ -214,7 +223,7 @@ public class DashboardController {
         List<Task> filteredTasks = filteredTaskList.stream().collect(Collectors.toList());
         updateTaskStatistics(filteredTasks);
     }
-
+    
     @FXML
     private void clearFilters() {
         if (searchField != null) searchField.clear();
@@ -225,7 +234,7 @@ public class DashboardController {
         
         applyFilters();
     }
-
+    
     @FXML
     private void handleAddTask() {
         showTaskView(null); 
@@ -245,6 +254,7 @@ public class DashboardController {
     private void handleDeleteTask() {
         Task selectedTask = taskTableView.getSelectionModel().getSelectedItem();
         if (selectedTask != null) {
+            // Confirmation avant suppression
             Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
             confirmAlert.setTitle("Confirmation de suppression");
             confirmAlert.setHeaderText("Supprimer la tâche");
@@ -278,6 +288,14 @@ public class DashboardController {
         }
     }
 
+    @FXML
+    private void handleManageUsers() {
+        if (currentUser.getRole() == Role.ADMIN) {
+            showUserManagementView();
+        } else {
+            showAlert("Accès refusé", "Seuls les administrateurs peuvent gérer les utilisateurs.", Alert.AlertType.WARNING);
+        }
+    }
     @FXML
     private void handleLogout() {
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -329,12 +347,32 @@ public class DashboardController {
         }
     }
 
+    private void showUserManagementView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(USER_MANAGEMENT_VIEW_PATH));
+            Parent root = loader.load();
+            
+            // Si le contrôleur a besoin de l'utilisateur connecté (pour éviter de se supprimer lui-même)
+            UserManagementController controller = loader.getController();
+            if (controller != null) {
+                controller.setCurrentUser(this.currentUser);
+            }
+            
+            Stage stage = getStage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Gestion des Utilisateurs - Task Manager");
+            stage.show();
+        } catch (IOException e) {
+            showAlert("Erreur de Navigation", "Impossible d'ouvrir la vue de gestion des utilisateurs.", Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
+    }
+
     private void showTaskView(Task task) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(TASK_VIEW_PATH));
             Parent root = loader.load();
             
-            // Passer l'ID utilisateur au contrôleur de tâches
             TaskController controller = loader.getController();
             controller.setCurrentUserId(this.currentUser.getId());
             
@@ -348,12 +386,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * boîte de dialogue d'alerte
-     * @param title Le titre de l'alerte
-     * @param message Le message à afficher
-     * @param type Le type d'alerte
-     */
     private void showAlert(String title, String message, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
@@ -362,7 +394,6 @@ public class DashboardController {
         alert.showAndWait();
     }
 
-    // Méthode de filtrage avancée par date
     public void filterByDateRange(LocalDate startDate, LocalDate endDate) {
         filteredTaskList.setPredicate(task -> {
             if (task.getDueDate() == null) {
@@ -375,7 +406,6 @@ public class DashboardController {
         updateTaskStatistics(filteredTasks);
     }
 
-    // Filtre les tâches par mot-clé dans le titre et la description
     public void filterByKeyword(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             filteredTaskList.setPredicate(p -> true);
@@ -392,7 +422,13 @@ public class DashboardController {
         updateTaskStatistics(filteredTasks);
     }
 
-    // Retourne les tâches actuellement affichées (filtrées)
     public List<Task> getDisplayedTasks() {
         return filteredTaskList.stream().collect(Collectors.toList());
     }
+    
+    @FXML
+    private void exportTasksToCSV() {
+        // à implémenter
+        showAlert("Export CSV", "Fonctionnalité d'export à implémenter", Alert.AlertType.INFORMATION);
+    }
+}
