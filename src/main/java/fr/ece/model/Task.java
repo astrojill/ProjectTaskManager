@@ -39,7 +39,7 @@ public class Task {
     public Task() {
     }
 
-    // Constructeur pratique sans id/timestamps 
+    // Constructeur pratique sans id/timestamps
     public Task(String title, String description, LocalDate dueDate,
                 Status status, Priority priority,
                 Category category, User user) {
@@ -136,6 +136,21 @@ public class Task {
         this.category = category;
     }
 
+    public Integer getCategoryId() {
+        return (category != null) ? category.getId() : null;
+    }
+
+    public void setCategoryId(Integer categoryId) {
+        if (categoryId != null) {
+            if (this.category == null) {
+                this.category = new Category();
+            }
+            this.category.setId(categoryId);
+        } else {
+            this.category = null;
+        }
+    }
+
     public User getUser() {
         return user;
     }
@@ -143,6 +158,17 @@ public class Task {
     public void setUser(User user) {
         // Tats : user_id NOT NULL → normalement toujours un user
         this.user = user;
+    }
+
+    public int getUserId() {
+        return (user != null) ? user.getId() : 0;
+    }
+
+    public void setUserId(int userId) {
+        if (this.user == null) {
+            this.user = new User();
+        }
+        this.user.setId(userId);
     }
 
     public LocalDateTime getCreatedAt() {
