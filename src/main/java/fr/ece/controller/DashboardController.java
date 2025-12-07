@@ -372,14 +372,23 @@ public class DashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(TASK_VIEW_PATH));
             Parent root = loader.load();
-
+    
             TaskController controller = loader.getController();
             controller.setCurrentUserId(this.currentUser.getId());
-
-            Stage stage = getStage();
+            
+            // **Modification : Utiliser la nouvelle méthode pour passer la tâche**
+            // Si task est null, le contrôleur TaskController appellera handleNew().
+            // S'il est non-null, il passera en mode édition de cette tâche.
+            controller.setTaskToEdit(task); 
+    
+            Stage stage = new Stage(); // Créer une nouvelle fenêtre pour la vue Task
             stage.setScene(new Scene(root));
-            stage.setTitle("Gestion des Tâches");
-            stage.show();
+            stage.setTitle(task == null ? "Créer une Tâche" : "Modifier la Tâche");
+            stage.showAndWait(); // Utiliser showAndWait() si le Dashboard doit attendre la fermeture
+    
+            // Rafraîchir les données du tableau de bord après la fermeture de la fenêtre de la tâche
+            refreshDashboardData(); 
+
         } catch (IOException e) {
             showAlert("Erreur de Vue", "Impossible d'ouvrir la vue des tâches.", Alert.AlertType.ERROR);
             e.printStackTrace();
