@@ -17,17 +17,11 @@
         <VBox>
             <MenuBar styleClass="menu-bar">
                 <Menu text="Fichier">
-                    <MenuItem text="Paramètres" onAction="#handleSettings"/>
-                    <SeparatorMenuItem/>
                     <MenuItem text="Déconnexion" onAction="#handleLogout"/>
                 </Menu>
-                <Menu text="Gestion" fx:id="adminMenu">
+                <Menu text="Gestion">
                     <MenuItem text="Gérer les catégories" onAction="#handleManageCategories"/>
                     <MenuItem text="Gérer les utilisateurs" onAction="#handleManageUsers"/>
-                </Menu>
-                <Menu text="Aide">
-                    <MenuItem text="Documentation" onAction="#handleHelp"/>
-                    <MenuItem text="À propos" onAction="#handleAbout"/>
                 </Menu>
             </MenuBar>
 
@@ -37,12 +31,19 @@
                     <Insets top="15" right="20" bottom="15" left="20"/>
                 </padding>
 
-                <Text text="Tableau de bord" styleClass="page-title"/>
+                <Label fx:id="welcomeLabel" text="Bienvenue" styleClass="page-title"/>
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <Label fx:id="userLabel" text="Utilisateur: " styleClass="user-label"/>
-                <Label fx:id="roleLabel" text="Rôle: " styleClass="role-label"/>
+                <!-- Boutons d'administration (visibilité contrôlée par le controller) -->
+                <Button fx:id="manageCategoriesButton"
+                        text="Gérer les catégories"
+                        onAction="#handleManageCategories"
+                        styleClass="secondary-button"/>
+                <Button fx:id="manageUsersButton"
+                        text="Gérer les utilisateurs"
+                        onAction="#handleManageUsers"
+                        styleClass="secondary-button"/>
             </HBox>
         </VBox>
     </top>
@@ -63,17 +64,27 @@
                         <Insets top="20" right="20" bottom="20" left="20"/>
                     </padding>
                     <Text text="Total Tâches" styleClass="stat-label"/>
-                    <Text fx:id="totalTasksLabel" text="0" styleClass="stat-value"/>
+                    <Label fx:id="totalTasksLabel" text="0" styleClass="stat-value"/>
                 </VBox>
 
-                <!-- Pending Tasks Card -->
+                <!-- TODO Tasks Card -->
                 <VBox styleClass="stat-card-warning" spacing="10" alignment="CENTER"
                       HBox.hgrow="ALWAYS">
                     <padding>
                         <Insets top="20" right="20" bottom="20" left="20"/>
                     </padding>
+                    <Text text="À faire" styleClass="stat-label"/>
+                    <Label fx:id="todoCountLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+
+                <!-- In Progress Tasks Card -->
+                <VBox styleClass="stat-card-info" spacing="10" alignment="CENTER"
+                      HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets top="20" right="20" bottom="20" left="20"/>
+                    </padding>
                     <Text text="En cours" styleClass="stat-label"/>
-                    <Text fx:id="pendingTasksLabel" text="0" styleClass="stat-value"/>
+                    <Label fx:id="inProgressCountLabel" text="0" styleClass="stat-value"/>
                 </VBox>
 
                 <!-- Completed Tasks Card -->
@@ -83,19 +94,58 @@
                         <Insets top="20" right="20" bottom="20" left="20"/>
                     </padding>
                     <Text text="Terminées" styleClass="stat-label"/>
-                    <Text fx:id="completedTasksLabel" text="0" styleClass="stat-value"/>
-                </VBox>
-
-                <!-- Categories Card -->
-                <VBox styleClass="stat-card-info" spacing="10" alignment="CENTER"
-                      HBox.hgrow="ALWAYS">
-                    <padding>
-                        <Insets top="20" right="20" bottom="20" left="20"/>
-                    </padding>
-                    <Text text="Catégories" styleClass="stat-label"/>
-                    <Text fx:id="categoriesLabel" text="0" styleClass="stat-value"/>
+                    <Label fx:id="doneCountLabel" text="0" styleClass="stat-value"/>
                 </VBox>
             </HBox>
+
+            <!-- Filters Section -->
+            <VBox spacing="10" styleClass="filter-section">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
+
+                <!-- Search and Filters Row 1 -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Recherche:" styleClass="filter-label"/>
+                    <TextField fx:id="searchField"
+                               promptText="Rechercher une tâche..."
+                               prefWidth="250"/>
+
+                    <Label text="Statut:" styleClass="filter-label">
+                        <HBox.margin>
+                            <Insets left="20"/>
+                        </HBox.margin>
+                    </Label>
+                    <ComboBox fx:id="statusFilterCombo" prefWidth="150"/>
+
+                    <Label text="Priorité:" styleClass="filter-label">
+                        <HBox.margin>
+                            <Insets left="20"/>
+                        </HBox.margin>
+                    </Label>
+                    <ComboBox fx:id="priorityFilterCombo" prefWidth="150"/>
+                </HBox>
+
+                <!-- Filters Row 2 -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="Catégorie:" styleClass="filter-label"/>
+                    <ComboBox fx:id="categoryFilterCombo" prefWidth="200"/>
+
+                    <CheckBox fx:id="overdueCheckBox"
+                              text="Afficher uniquement les tâches en retard">
+                        <HBox.margin>
+                            <Insets left="20"/>
+                        </HBox.margin>
+                    </CheckBox>
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <Button fx:id="clearFiltersButton"
+                            text="Effacer les filtres"
+                            onAction="#clearFilters"
+                            styleClass="secondary-button"/>
+                </HBox>
+            </VBox>
 
             <!-- Tasks Section -->
             <VBox spacing="15" VBox.vgrow="ALWAYS">
@@ -104,36 +154,26 @@
                     <Text text="Mes Tâches" styleClass="section-title"/>
                     <Region HBox.hgrow="ALWAYS"/>
 
-                    <!-- Filter ComboBox -->
-                    <Label text="Filtrer par:" styleClass="filter-label"/>
-                    <ComboBox fx:id="filterComboBox"
-                              promptText="Toutes"
-                              onAction="#handleFilterChange"
-                              prefWidth="150"/>
-
-                    <!-- Search Field -->
-                    <TextField fx:id="searchField"
-                               promptText="Rechercher une tâche..."
-                               prefWidth="250"
-                               onKeyReleased="#handleSearch"/>
-
-                    <!-- Add Task Button -->
+                    <!-- Action Buttons -->
                     <Button text="+ Nouvelle Tâche"
                             onAction="#handleAddTask"
                             styleClass="primary-button"/>
+                    <Button text="Modifier"
+                            onAction="#handleEditTask"
+                            styleClass="secondary-button"/>
+                    <Button text="Supprimer"
+                            onAction="#handleDeleteTask"
+                            styleClass="delete-button"/>
                 </HBox>
 
                 <!-- Tasks Table -->
-                <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS" styleClass="table-view">
+                <TableView fx:id="taskTableView" VBox.vgrow="ALWAYS" styleClass="table-view">
                     <columns>
                         <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
                         <TableColumn fx:id="titleColumn" text="Titre" prefWidth="250"/>
-                        <TableColumn fx:id="categoryColumn" text="Catégorie" prefWidth="150"/>
                         <TableColumn fx:id="statusColumn" text="Statut" prefWidth="120"/>
                         <TableColumn fx:id="priorityColumn" text="Priorité" prefWidth="100"/>
-                        <TableColumn fx:id="dueDateColumn" text="Date limite" prefWidth="120"/>
-                        <TableColumn fx:id="assignedToColumn" text="Assigné à" prefWidth="150"/>
-                        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="200"/>
+                        <TableColumn fx:id="categoryColumn" text="Catégorie" prefWidth="150"/>
                     </columns>
                     <placeholder>
                         <Label text="Aucune tâche disponible" styleClass="placeholder-label"/>
@@ -149,9 +189,7 @@
             <padding>
                 <Insets top="10" right="20" bottom="10" left="20"/>
             </padding>
-            <Label fx:id="statusLabel" text="Prêt" styleClass="status-text"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="dateLabel" styleClass="date-text"/>
+            <Label text="Prêt" styleClass="status-text"/>
         </HBox>
     </bottom>
 </BorderPane>
