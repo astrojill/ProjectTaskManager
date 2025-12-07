@@ -40,14 +40,6 @@
                        style="-fx-font-size: 11px; -fx-text-fill: #7f8c8d;"/>
             </VBox>
 
-            <!-- Email Field (optionnel) -->
-            <VBox spacing="5">
-                <Label text="Email (optionnel)" styleClass="form-label"/>
-                <TextField fx:id="emailField"
-                           promptText="votre.email@exemple.com"
-                           styleClass="text-field"/>
-            </VBox>
-
             <!-- Password Field -->
             <VBox spacing="5">
                 <Label text="Mot de passe *" styleClass="form-label"/>
@@ -71,6 +63,11 @@
             <!-- Role Selection (visible uniquement si premier utilisateur ou admin) -->
             <VBox spacing="5" fx:id="roleContainer" visible="false" managed="false">
                 <Label text="Rôle" styleClass="form-label"/>
+
+                <fx:define>
+                    <ToggleGroup fx:id="roleGroup"/>
+                </fx:define>
+
                 <HBox spacing="15">
                     <RadioButton fx:id="userRoleRadio" text="Utilisateur"
                                  toggleGroup="$roleGroup" selected="true"/>
