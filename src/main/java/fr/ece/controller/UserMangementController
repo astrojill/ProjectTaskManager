@@ -2,6 +2,7 @@ package fr.ece.controller;
 
 import fr.ece.dao.TaskDAO;
 import fr.ece.dao.UserDAO;
+import fr.ece.model.User.Role;
 import fr.ece.model.User;
 import fr.ece.util.PasswordUtils;
 import javafx.collections.FXCollections;
@@ -28,7 +29,7 @@ public class UserManagementController {
     @FXML private TableView<User> usersTable;
     @FXML private TableColumn<User, Integer> idColumn;
     @FXML private TableColumn<User, String> usernameColumn;
-    @FXML private TableColumn<User, String> roleColumn;
+    @FXML private TableColumn<User, Role> roleColumn;
     @FXML private TableColumn<User, LocalDateTime> createdAtColumn;
     @FXML private TableColumn<User, Integer> tasksCountColumn;
     @FXML private TableColumn<User, Void> actionsColumn;
@@ -113,16 +114,16 @@ public class UserManagementController {
         });
 
         // Colorer la colonne rôle
-        roleColumn.setCellFactory(column -> new TableCell<User, String>() {
+        roleColumn.setCellFactory(column -> new TableCell<User, Role>() {
             @Override
-            protected void updateItem(String role, boolean empty) {
+            protected void updateItem(Role role, boolean empty) {
                 super.updateItem(role, empty);
                 if (empty || role == null) {
                     setText(null);
                     setStyle("");
                 } else {
-                    setText(role);
-                    if (role.equals("ADMIN")) {
+                    setText(role.toString());
+                    if (role == Role.ADMIN) {
                         setStyle("-fx-background-color: #fff3cd; -fx-text-fill: #f39c12; -fx-font-weight: bold;");
                     } else {
                         setStyle("-fx-background-color: #e3f2fd; -fx-text-fill: #2196F3;");
@@ -205,7 +206,7 @@ public class UserManagementController {
 
     private void loadUsers() {
         try {
-            List<User> users = userDAO.findAll();
+            List<User> users = userDAO.getAllUsers();
             allUsers = FXCollections.observableArrayList(users);
             usersTable.setItems(allUsers);
             updateCount();
@@ -221,14 +222,13 @@ public class UserManagementController {
             int total = allUsers.size();
             totalUsersLabel.setText(String.valueOf(total));
 
-            long admins = allUsers.stream().filter(u -> u.getRole().equals("ADMIN")).count();
+            long admins = allUsers.stream().filter(u -> u.getRole() == Role.ADMIN).count();
             adminUsersLabel.setText(String.valueOf(admins));
 
-            long regular = allUsers.stream().filter(u -> u.getRole().equals("USER")).count();
+            long regular = allUsers.stream().filter(u -> u.getRole() == Role.USER).count();
             regularUsersLabel.setText(String.valueOf(regular));
 
             // Pour "actifs aujourd'hui", vous pouvez implémenter une logique de dernière connexion
-            // Pour l'instant, on met 0 ou un nombre fictif
             activeUsersLabel.setText("0");
 
         } catch (Exception e) {
@@ -245,7 +245,7 @@ public class UserManagementController {
             Scene scene = new Scene(loader.load());
 
             DashboardController controller = loader.getController();
-            controller.setCurrentUser(currentUser);
+            controller.setUser(currentUser);
 
             Stage stage = (Stage) usersTable.getScene().getWindow();
             stage.setScene(scene);
@@ -284,9 +284,9 @@ public class UserManagementController {
         ObservableList<User> filtered = allUsers.filtered(user -> {
             switch (filter) {
                 case "Administrateurs":
-                    return user.getRole().equals("ADMIN");
+                    return user.getRole() == Role.ADMIN;
                 case "Utilisateurs":
-                    return user.getRole().equals("USER");
+                    return user.getRole() == Role.USER;
                 case "Avec tâches":
                     return taskDAO.countByUser(user.getId()) > 0;
                 case "Sans tâches":
@@ -327,9 +327,12 @@ public class UserManagementController {
         User selected = usersTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
 
+        // Convertir le rôle actuel en String pour le dialogue
+        String currentRoleStr = selected.getRole().toString();
+
         // Dialogue pour changer le rôle
         ChoiceDialog<String> dialog = new ChoiceDialog<>(
-                selected.getRole(),
+                currentRoleStr,
                 "ADMIN", "USER"
         );
         dialog.setTitle("Changer le rôle");
@@ -337,17 +340,27 @@ public class UserManagementController {
         dialog.setContentText("Nouveau rôle:");
 
         Optional<String> result = dialog.showAndWait();
-        result.ifPresent(newRole -> {
-            if (!newRole.equals(selected.getRole())) {
-                selected.setRole(newRole);
-                boolean success = userDAO.update(selected);
+        result.ifPresent(newRoleStr -> {
+            if (!newRoleStr.equals(currentRoleStr)) {
+                try {
+                    // Convertir la String en Role enum
+                    Role newRole = Role.valueOf(newRoleStr);
+                    selected.setRole(newRole);
 
-                if (success) {
-                    usersTable.refresh();
-                    updateStatistics();
-                    statusLabel.setText("Rôle modifié: " + selected.getUsername() + " → " + newRole);
-                } else {
-                    showAlert("Erreur", "Impossible de modifier le rôle");
+                    boolean success = userDAO.updateUser(selected);
+
+                    if (success) {
+                        usersTable.refresh();
+                        updateStatistics();
+                        statusLabel.setText("Rôle modifié: " + selected.getUsername() + " → " + newRoleStr);
+                    } else {
+                        showAlert("Erreur", "Impossible de modifier le rôle");
+                    }
+
+                } catch (IllegalArgumentException e) {
+                    showAlert("Erreur", "Rôle invalide: " + newRoleStr);
+                } catch (Exception e) {
+                    showAlert("Erreur", "Erreur lors de la modification: " + e.getMessage());
                 }
             }
         });
@@ -371,15 +384,20 @@ public class UserManagementController {
                 return;
             }
 
-            String hashedPassword = PasswordUtils.hashPassword(newPassword);
-            selected.setPassword(hashedPassword);
+            try {
+                String hashedPassword = PasswordUtils.hashPassword(newPassword);
+                selected.setPasswordHash(hashedPassword);
 
-            boolean success = userDAO.update(selected);
-            if (success) {
-                showAlert("Succès", "Mot de passe réinitialisé pour " + selected.getUsername());
-                statusLabel.setText("Mot de passe réinitialisé");
-            } else {
-                showAlert("Erreur", "Impossible de réinitialiser le mot de passe");
+                boolean success = userDAO.updateUser(selected);
+                if (success) {
+                    showAlert("Succès", "Mot de passe réinitialisé pour " + selected.getUsername());
+                    statusLabel.setText("Mot de passe réinitialisé");
+                } else {
+                    showAlert("Erreur", "Impossible de réinitialiser le mot de passe");
+                }
+
+            } catch (Exception e) {
+                showAlert("Erreur", "Erreur lors de la réinitialisation: " + e.getMessage());
             }
         });
     }
@@ -398,21 +416,21 @@ public class UserManagementController {
             return;
         }
 
-        int taskCount = taskDAO.countByUser(user.getId());
+        try {
+            int taskCount = taskDAO.countByUser(user.getId());
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Supprimer l'utilisateur " + user.getUsername() + " ?");
-        confirm.setContentText(
-                "Cet utilisateur a " + taskCount + " tâche(s).\n" +
-                        "Toutes ses tâches seront également supprimées.\n\n" +
-                        "Cette action est irréversible."
-        );
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Confirmation");
+            confirm.setHeaderText("Supprimer l'utilisateur " + user.getUsername() + " ?");
+            confirm.setContentText(
+                    "Cet utilisateur a " + taskCount + " tâche(s).\n" +
+                            "Toutes ses tâches seront également supprimées.\n\n" +
+                            "Cette action est irréversible."
+            );
 
-        Optional<ButtonType> result = confirm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                boolean success = userDAO.delete(user.getId());
+            Optional<ButtonType> result = confirm.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                boolean success = userDAO.deleteUser(user.getId());
                 if (success) {
                     allUsers.remove(user);
                     updateStatistics();
@@ -421,30 +439,34 @@ public class UserManagementController {
                 } else {
                     showAlert("Erreur", "Impossible de supprimer l'utilisateur");
                 }
-            } catch (Exception e) {
-                showAlert("Erreur", "Erreur: " + e.getMessage());
             }
+        } catch (Exception e) {
+            showAlert("Erreur", "Erreur: " + e.getMessage());
         }
     }
 
     private void handleViewUser(User user) {
-        int taskCount = taskDAO.countByUser(user.getId());
+        try {
+            int taskCount = taskDAO.countByUser(user.getId());
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Détails de l'utilisateur");
-        alert.setHeaderText(user.getUsername());
-        alert.setContentText(
-                "ID: " + user.getId() + "\n" +
-                        "Rôle: " + user.getRole() + "\n" +
-                        "Nombre de tâches: " + taskCount + "\n" +
-                        "Date de création: " + user.getCreatedAt()
-        );
-        alert.showAndWait();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Détails de l'utilisateur");
+            alert.setHeaderText(user.getUsername());
+            alert.setContentText(
+                    "ID: " + user.getId() + "\n" +
+                            "Rôle: " + user.getRole() + "\n" +
+                            "Nombre de tâches: " + taskCount + "\n" +
+                            "Date de création: " + user.getCreatedAt()
+            );
+            alert.showAndWait();
+        } catch (Exception e) {
+            showAlert("Erreur", "Erreur lors de la récupération des détails: " + e.getMessage());
+        }
     }
 
     private void handleEditUser(User user) {
         // Pour simplifier, on utilise le changement de rôle
-        // Vous pouvez créer une vue dédiée si nécessaire
+        usersTable.getSelectionModel().select(user);
         handleChangeRole(null);
     }
 
