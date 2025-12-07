@@ -42,7 +42,7 @@ public class DashboardController {
     @FXML private TableColumn<Task, String> categoryColumn;
     @FXML private Button manageCategoriesButton;
     @FXML private Button manageUsersButton;
-    
+
     @FXML private TextField searchField;
     @FXML private ComboBox<String> statusFilterCombo;
     @FXML private ComboBox<String> priorityFilterCombo;
@@ -69,91 +69,91 @@ public class DashboardController {
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
-        
+
         filteredTaskList = new FilteredList<>(taskList, p -> true);
         taskTableView.setItems(filteredTaskList);
-        
+
         taskTableView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2 && !taskTableView.getSelectionModel().isEmpty()) {
                 Task selectedTask = taskTableView.getSelectionModel().getSelectedItem();
-                showTaskView(selectedTask); 
+                showTaskView(selectedTask);
             }
         });
-        
+
         // Initialisation des ComboBox de filtrage (si présents dans la vue FXML)
         if (statusFilterCombo != null) {
             statusFilterCombo.getItems().addAll("Tous", "TODO", "IN_PROGRESS", "DONE", "CANCELLED");
             statusFilterCombo.setValue("Tous");
             statusFilterCombo.setOnAction(e -> applyFilters());
         }
-        
+
         if (priorityFilterCombo != null) {
             priorityFilterCombo.getItems().addAll("Tous", "LOW", "MEDIUM", "HIGH");
             priorityFilterCombo.setValue("Tous");
             priorityFilterCombo.setOnAction(e -> applyFilters());
         }
-        
+
         if (categoryFilterCombo != null) {
             categoryFilterCombo.getItems().add("Toutes");
             categoryFilterCombo.setValue("Toutes");
             categoryFilterCombo.setOnAction(e -> applyFilters());
         }
-        
+
         if (searchField != null) {
             searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
         }
-        
+
         if (overdueCheckBox != null) {
             overdueCheckBox.setOnAction(e -> applyFilters());
         }
     }
-  
+
     public void setUser(User user) {
         this.currentUser = user;
         welcomeLabel.setText("Bienvenue, " + user.getUsername() + " !");
-        
+
         // Masquer les boutons d'administration pour les utilisateurs non-ADMIN
         boolean isAdmin = user.getRole() == Role.ADMIN;
         manageCategoriesButton.setVisible(isAdmin);
         if (manageUsersButton != null) {
             manageUsersButton.setVisible(isAdmin);
         }
-        
+
         refreshDashboardData();
     }
-    
+
     public void refreshDashboardData() {
         try {
-            List<Task> fetchedTasks = taskDAO.getTasksByUserId(currentUser.getId()); 
-          
+            List<Task> fetchedTasks = taskDAO.getTasksByUserId(currentUser.getId());
+
             List<Category> categories = categoryDAO.getAllCategories();
             categoryMap = categories.stream()
-                .collect(Collectors.toMap(Category::getId, Category::getName));
-            
+                    .collect(Collectors.toMap(Category::getId, Category::getName));
+
             if (categoryFilterCombo != null) {
                 categoryFilterCombo.getItems().clear();
                 categoryFilterCombo.getItems().add("Toutes");
                 categoryFilterCombo.getItems().addAll(categories.stream()
-                    .map(Category::getName)
-                    .sorted()
-                    .collect(Collectors.toList()));
+                        .map(Category::getName)
+                        .sorted()
+                        .collect(Collectors.toList()));
                 categoryFilterCombo.setValue("Toutes");
             }
-            
+
             fetchedTasks.forEach(task -> {
                 if (task.getCategoryId() != null) {
-                    task.setCategoryName(categoryMap.getOrDefault(task.getCategoryId(), "N/A"));
+                    task.setCategory(categoryMap.getOrDefault(task.getCategoryId(), "N/A"));
                 } else {
-                    task.setCategoryName("Sans Catégorie"); 
+                    task.setCategory("Sans Catégorie");
                 }
             });
 
             // Mise à jour de la liste principale
             taskList.setAll(fetchedTasks);
-            
+
             // Mise à jour des statistiques avec toutes les tâches (non filtrées)
             updateTaskStatistics(fetchedTasks);
-            
+
             // Réappliquer les filtres existants
             applyFilters();
 
@@ -168,7 +168,7 @@ public class DashboardController {
         long todo = tasks.stream().filter(t -> t.getStatus() == Status.TODO).count();
         long inProgress = tasks.stream().filter(t -> t.getStatus() == Status.IN_PROGRESS).count();
         long done = tasks.stream().filter(t -> t.getStatus() == Status.DONE).count();
-        
+
         totalTasksLabel.setText(String.valueOf(total));
         todoCountLabel.setText(String.valueOf(todo));
         inProgressCountLabel.setText(String.valueOf(inProgress));
@@ -182,48 +182,48 @@ public class DashboardController {
             if (searchField != null && !searchField.getText().isEmpty()) {
                 String searchText = searchField.getText().toLowerCase();
                 boolean matchesSearch = task.getTitle().toLowerCase().contains(searchText) ||
-                    (task.getDescription() != null && task.getDescription().toLowerCase().contains(searchText));
+                        (task.getDescription() != null && task.getDescription().toLowerCase().contains(searchText));
                 if (!matchesSearch) {
                     return false;
                 }
             }
-            
+
             // Filtre par statut
             if (statusFilterCombo != null && !statusFilterCombo.getValue().equals("Tous")) {
                 if (!task.getStatus().name().equals(statusFilterCombo.getValue())) {
                     return false;
                 }
             }
-            
+
             // Filtre par priorité
             if (priorityFilterCombo != null && !priorityFilterCombo.getValue().equals("Tous")) {
                 if (!task.getPriority().name().equals(priorityFilterCombo.getValue())) {
                     return false;
                 }
             }
-            
+
             // Filtre par catégorie
             if (categoryFilterCombo != null && !categoryFilterCombo.getValue().equals("Toutes")) {
                 String selectedCategory = categoryFilterCombo.getValue();
-                if (task.getCategoryName() == null || !task.getCategoryName().equals(selectedCategory)) {
+                if (task.getCategory() == null || !task.getCategory().equals(selectedCategory)) {
                     return false;
                 }
             }
-            
+
             // Filtre pour les tâches en retard
             if (overdueCheckBox != null && overdueCheckBox.isSelected()) {
                 if (task.getDueDate() == null || !task.getDueDate().isBefore(LocalDate.now())) {
                     return false;
                 }
             }
-            
+
             return true;
         });
-        
+
         List<Task> filteredTasks = filteredTaskList.stream().collect(Collectors.toList());
         updateTaskStatistics(filteredTasks);
     }
-    
+
     @FXML
     private void clearFilters() {
         if (searchField != null) searchField.clear();
@@ -231,15 +231,15 @@ public class DashboardController {
         if (priorityFilterCombo != null) priorityFilterCombo.setValue("Tous");
         if (categoryFilterCombo != null) categoryFilterCombo.setValue("Toutes");
         if (overdueCheckBox != null) overdueCheckBox.setSelected(false);
-        
+
         applyFilters();
     }
-    
+
     @FXML
     private void handleAddTask() {
-        showTaskView(null); 
+        showTaskView(null);
     }
-    
+
     @FXML
     private void handleEditTask() {
         Task selectedTask = taskTableView.getSelectionModel().getSelectedItem();
@@ -259,13 +259,13 @@ public class DashboardController {
             confirmAlert.setTitle("Confirmation de suppression");
             confirmAlert.setHeaderText("Supprimer la tâche");
             confirmAlert.setContentText("Êtes-vous sûr de vouloir supprimer la tâche \"" + selectedTask.getTitle() + "\" ?");
-            
+
             confirmAlert.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     try {
                         if (taskDAO.deleteTask(selectedTask.getId())) {
                             showAlert("Succès", "Tâche supprimée avec succès.", Alert.AlertType.INFORMATION);
-                            refreshDashboardData(); 
+                            refreshDashboardData();
                         } else {
                             showAlert("Échec", "Échec de la suppression de la tâche.", Alert.AlertType.ERROR);
                         }
@@ -302,14 +302,14 @@ public class DashboardController {
         confirmAlert.setTitle("Confirmation de déconnexion");
         confirmAlert.setHeaderText("Déconnexion");
         confirmAlert.setContentText("Êtes-vous sûr de vouloir vous déconnecter ?");
-        
+
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 showLoginView();
             }
         });
     }
-    
+
     private Stage getStage() {
         return (Stage) welcomeLabel.getScene().getWindow();
     }
@@ -318,7 +318,7 @@ public class DashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(LOGIN_VIEW_PATH));
             Parent root = loader.load();
-            
+
             Stage stage = getStage();
             stage.setScene(new Scene(root));
             stage.setTitle("Connexion - Task Manager");
@@ -333,10 +333,10 @@ public class DashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(CATEGORY_VIEW_PATH));
             Parent root = loader.load();
-            
+
             CategoryController controller = loader.getController();
             // Si nécessaire, passer des données au contrôleur de catégories
-            
+
             Stage stage = getStage();
             stage.setScene(new Scene(root));
             stage.setTitle("Gestion des Catégories - Task Manager");
@@ -351,13 +351,13 @@ public class DashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(USER_MANAGEMENT_VIEW_PATH));
             Parent root = loader.load();
-            
+
             // Si le contrôleur a besoin de l'utilisateur connecté (pour éviter de se supprimer lui-même)
             UserManagementController controller = loader.getController();
             if (controller != null) {
                 controller.setCurrentUser(this.currentUser);
             }
-            
+
             Stage stage = getStage();
             stage.setScene(new Scene(root));
             stage.setTitle("Gestion des Utilisateurs - Task Manager");
@@ -372,10 +372,10 @@ public class DashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(TASK_VIEW_PATH));
             Parent root = loader.load();
-            
+
             TaskController controller = loader.getController();
             controller.setCurrentUserId(this.currentUser.getId());
-            
+
             Stage stage = getStage();
             stage.setScene(new Scene(root));
             stage.setTitle("Gestion des Tâches");
@@ -401,7 +401,7 @@ public class DashboardController {
             }
             return !task.getDueDate().isBefore(startDate) && !task.getDueDate().isAfter(endDate);
         });
-        
+
         List<Task> filteredTasks = filteredTaskList.stream().collect(Collectors.toList());
         updateTaskStatistics(filteredTasks);
     }
@@ -413,11 +413,11 @@ public class DashboardController {
             String lowerCaseKeyword = keyword.toLowerCase();
             filteredTaskList.setPredicate(task -> {
                 return task.getTitle().toLowerCase().contains(lowerCaseKeyword) ||
-                       (task.getDescription() != null && 
-                        task.getDescription().toLowerCase().contains(lowerCaseKeyword));
+                        (task.getDescription() != null &&
+                                task.getDescription().toLowerCase().contains(lowerCaseKeyword));
             });
         }
-        
+
         List<Task> filteredTasks = filteredTaskList.stream().collect(Collectors.toList());
         updateTaskStatistics(filteredTasks);
     }
@@ -425,7 +425,7 @@ public class DashboardController {
     public List<Task> getDisplayedTasks() {
         return filteredTaskList.stream().collect(Collectors.toList());
     }
-    
+
     @FXML
     private void exportTasksToCSV() {
         // à implémenter
