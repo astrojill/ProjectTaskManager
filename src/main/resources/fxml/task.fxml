@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Text?>
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
@@ -21,7 +20,7 @@
 
         <!-- Header -->
         <HBox alignment="CENTER_LEFT">
-            <Text fx:id="formTitle" text="Nouvelle Tâche" styleClass="dialog-title"/>
+            <Label fx:id="formTitle" text="Nouvelle Tâche" styleClass="dialog-title"/>
         </HBox>
 
         <Separator/>
@@ -63,24 +62,17 @@
                 <!-- Priority -->
                 <VBox spacing="8">
                     <Label text="Priorité *" styleClass="form-label"/>
-                    <HBox spacing="10">
-                        <ToggleButton fx:id="lowPriorityBtn" text="Basse"
-                                      toggleGroup="$priorityGroup"
-                                      styleClass="priority-btn-low"/>
-                        <ToggleButton fx:id="mediumPriorityBtn" text="Moyenne"
-                                      toggleGroup="$priorityGroup"
-                                      selected="true"
-                                      styleClass="priority-btn-medium"/>
-                        <ToggleButton fx:id="highPriorityBtn" text="Haute"
-                                      toggleGroup="$priorityGroup"
-                                      styleClass="priority-btn-high"/>
-                    </HBox>
+                    <ComboBox fx:id="priorityComboBox"
+                              promptText="Sélectionnez une priorité"
+                              maxWidth="Infinity"
+                              styleClass="combo-box"/>
                 </VBox>
 
                 <!-- Status -->
                 <VBox spacing="8">
                     <Label text="Statut *" styleClass="form-label"/>
                     <ComboBox fx:id="statusComboBox"
+                              promptText="Sélectionnez un statut"
                               maxWidth="Infinity"
                               styleClass="combo-box"/>
                 </VBox>
@@ -92,15 +84,6 @@
                                 maxWidth="Infinity"
                                 promptText="Sélectionnez une date"
                                 styleClass="date-picker"/>
-                </VBox>
-
-                <!-- Assigned To -->
-                <VBox spacing="8" fx:id="assignedToContainer">
-                    <Label text="Assigner à" styleClass="form-label"/>
-                    <ComboBox fx:id="assignedToComboBox"
-                              promptText="Sélectionnez un utilisateur"
-                              maxWidth="Infinity"
-                              styleClass="combo-box"/>
                 </VBox>
 
                 <!-- Error/Info Label -->
@@ -116,11 +99,13 @@
 
         <!-- Action Buttons -->
         <HBox spacing="10" alignment="CENTER_RIGHT">
-            <Button text="Annuler"
+            <Button fx:id="cancelButton"
+                    text="Annuler"
                     onAction="#handleCancel"
                     styleClass="secondary-button"
                     prefWidth="120"/>
-            <Button text="Enregistrer"
+            <Button fx:id="saveButton"
+                    text="Enregistrer"
                     onAction="#handleSave"
                     styleClass="primary-button"
                     prefWidth="120"/>
