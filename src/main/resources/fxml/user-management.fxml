@@ -107,7 +107,6 @@
                 <columns>
                     <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
                     <TableColumn fx:id="usernameColumn" text="Nom d'utilisateur" prefWidth="200"/>
-                    <TableColumn fx:id="emailColumn" text="Email" prefWidth="250"/>
                     <TableColumn fx:id="roleColumn" text="Rôle" prefWidth="120"/>
                     <TableColumn fx:id="createdAtColumn" text="Date création" prefWidth="150"/>
                     <TableColumn fx:id="tasksCountColumn" text="Tâches" prefWidth="80"/>
