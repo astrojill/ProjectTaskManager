@@ -29,6 +29,9 @@ import java.util.stream.Collectors;
 
 public class DashboardController {
 
+    // utilisateur actuellement connecté (envoyé par LoginController)
+    private User User;
+
     @FXML private Label welcomeLabel;
     @FXML private Label totalTasksLabel;
     @FXML private Label todoCountLabel;
@@ -50,7 +53,6 @@ public class DashboardController {
     @FXML private Button clearFiltersButton;
     @FXML private CheckBox overdueCheckBox;
 
-    private User currentUser;
     private final TaskDAO taskDAO = new TaskDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
     private ObservableList<Task> taskList = FXCollections.observableArrayList();
