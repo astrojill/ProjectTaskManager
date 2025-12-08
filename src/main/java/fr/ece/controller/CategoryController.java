@@ -10,6 +10,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import java.io.IOException;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -297,23 +303,27 @@ public class CategoryController {
         hideMessage();
     }
 
-    @FXML
+   @FXML
 private void handleBack() {
     try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dashboard.fxml"));
-        Parent root = loader.load();
 
-        // Récupérer le stage actuel
+        // On charge le fichier FXML du dashboard
+        Parent root = FXMLLoader.load(getClass().getResource("/fxml/dashboard.fxml"));
+
+        // On récupère la fenêtre actuelle (celle des catégories)
         Stage stage = (Stage) categoriesTable.getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.setTitle("Task Manager - Tableau de bord");
-        stage.show();
 
-    } catch (Exception e) {
+        // On remplace le contenu par le dashboard
+        stage.setScene(new Scene(root));
+        stage.setTitle("Task Manager - Dashboard");
+
+    } catch (IOException e) {
         e.printStackTrace();
-        showAlert("Impossible de retourner au tableau de bord.");
+        showAlert("Erreur : impossible de revenir au dashboard.");
     }
 }
+
+
 
 
 
