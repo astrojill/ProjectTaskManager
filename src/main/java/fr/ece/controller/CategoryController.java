@@ -298,10 +298,23 @@ public class CategoryController {
     }
 
     @FXML
-    private void handleBack() {
+private void handleBack() {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dashboard.fxml"));
+        Parent root = loader.load();
+
+        // Récupérer le stage actuel
         Stage stage = (Stage) categoriesTable.getScene().getWindow();
-        stage.close();
+        stage.setScene(new Scene(root));
+        stage.setTitle("Task Manager - Tableau de bord");
+        stage.show();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        showAlert("Impossible de retourner au tableau de bord.");
     }
+}
+
 
 
     // methodes utilitaires
