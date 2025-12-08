@@ -29,9 +29,6 @@ import java.util.stream.Collectors;
 
 public class DashboardController {
 
-    // utilisateur actuellement connecté (envoyé par LoginController)
-    private User CurrentUser;
-
     @FXML private Label welcomeLabel;
     @FXML private Label totalTasksLabel;
     @FXML private Label todoCountLabel;
@@ -53,16 +50,17 @@ public class DashboardController {
     @FXML private Button clearFiltersButton;
     @FXML private CheckBox overdueCheckBox;
 
+    private User currentUser;
     private final TaskDAO taskDAO = new TaskDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
     private ObservableList<Task> taskList = FXCollections.observableArrayList();
     private FilteredList<Task> filteredTaskList;
     private Map<Integer, String> categoryMap;
 
-    private static final String LOGIN_VIEW_PATH = "/fr/ece/view/LoginView.fxml";
-    private static final String CATEGORY_VIEW_PATH = "/fr/ece/view/CategoryView.fxml";
-    private static final String TASK_VIEW_PATH = "/fr/ece/view/TaskView.fxml";
-    private static final String USER_MANAGEMENT_VIEW_PATH = "/fr/ece/view/UserManagementView.fxml";
+    private static final String LOGIN_VIEW_PATH = "/fxml/login.fxml";
+    private static final String CATEGORY_VIEW_PATH = "/fxml/category.fxml";
+    private static final String TASK_VIEW_PATH = "/fxml/task.fxml";
+    private static final String USER_MANAGEMENT_VIEW_PATH = "/fxml/user-management.fxml";
 
     @FXML
     public void initialize() {
@@ -374,22 +372,22 @@ public class DashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(TASK_VIEW_PATH));
             Parent root = loader.load();
-    
+
             TaskController controller = loader.getController();
             controller.setCurrentUserId(this.currentUser.getId());
-            
+
             // **Modification : Utiliser la nouvelle méthode pour passer la tâche**
             // Si task est null, le contrôleur TaskController appellera handleNew().
             // S'il est non-null, il passera en mode édition de cette tâche.
-            controller.setTaskToEdit(task); 
-    
+            controller.setTaskToEdit(task);
+
             Stage stage = new Stage(); // Créer une nouvelle fenêtre pour la vue Task
             stage.setScene(new Scene(root));
             stage.setTitle(task == null ? "Créer une Tâche" : "Modifier la Tâche");
             stage.showAndWait(); // Utiliser showAndWait() si le Dashboard doit attendre la fermeture
-    
+
             // Rafraîchir les données du tableau de bord après la fermeture de la fenêtre de la tâche
-            refreshDashboardData(); 
+            refreshDashboardData();
 
         } catch (IOException e) {
             showAlert("Erreur de Vue", "Impossible d'ouvrir la vue des tâches.", Alert.AlertType.ERROR);
