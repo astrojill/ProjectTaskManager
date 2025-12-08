@@ -40,6 +40,8 @@ public class DashboardController {
     @FXML private TableColumn<Task, String> statusColumn;
     @FXML private TableColumn<Task, String> priorityColumn;
     @FXML private TableColumn<Task, String> categoryColumn;
+    @FXML private TableColumn<Task, LocalDate> dueDateColumn; // Pour la date limite
+    @FXML private TableColumn<Task, String> ownerColumn;      // Pour le propriétaire de la tâche
     @FXML private Button manageCategoriesButton;
     @FXML private Button manageUsersButton;
 
@@ -70,6 +72,15 @@ public class DashboardController {
         priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
 
+        if (dueDateColumn != null) {
+            dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
+        }
+        
+        // La colonne du propriétaire doit apparaître uniquement si elle est définie
+        if (ownerColumn != null) {
+            ownerColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
+        }
+        
         filteredTaskList = new FilteredList<>(taskList, p -> true);
         taskTableView.setItems(filteredTaskList);
 
