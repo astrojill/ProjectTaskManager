@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -298,8 +299,10 @@ public class CategoryController {
 
     @FXML
     private void handleBack() {
-        statusLabel.setText("Retour (à implémenter).");
+        Stage stage = (Stage) categoriesTable.getScene().getWindow();
+        stage.close();
     }
+
 
     // methodes utilitaires
     private void clearForm() {
