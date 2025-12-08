@@ -40,8 +40,8 @@ public class DashboardController {
     @FXML private TableColumn<Task, String> statusColumn;
     @FXML private TableColumn<Task, String> priorityColumn;
     @FXML private TableColumn<Task, String> categoryColumn;
-    @FXML private TableColumn<Task, LocalDate> dueDateColumn; // Pour la date limite
-    @FXML private TableColumn<Task, String> ownerColumn;      // Pour le propriétaire de la tâche
+    @FXML private TableColumn<Task, LocalDate> dueDateColumn;
+    @FXML private TableColumn<Task, String> ownerColumn;
     @FXML private Button manageCategoriesButton;
     @FXML private Button manageUsersButton;
 
@@ -75,12 +75,11 @@ public class DashboardController {
         if (dueDateColumn != null) {
             dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
         }
-        
-        // La colonne du propriétaire doit apparaître uniquement si elle est définie
+
         if (ownerColumn != null) {
             ownerColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
         }
-        
+
         filteredTaskList = new FilteredList<>(taskList, p -> true);
         taskTableView.setItems(filteredTaskList);
 
@@ -91,7 +90,6 @@ public class DashboardController {
             }
         });
 
-        // Initialisation des ComboBox de filtrage (si présents dans la vue FXML)
         if (statusFilterCombo != null) {
             statusFilterCombo.getItems().addAll("Tous", "TODO", "IN_PROGRESS", "DONE", "CANCELLED");
             statusFilterCombo.setValue("Tous");
@@ -123,7 +121,6 @@ public class DashboardController {
         this.currentUser = user;
         welcomeLabel.setText("Bienvenue, " + user.getUsername() + " !");
 
-        // Masquer les boutons d'administration pour les utilisateurs non-ADMIN
         boolean isAdmin = user.getRole() == Role.ADMIN;
         manageCategoriesButton.setVisible(isAdmin);
         if (manageUsersButton != null) {
@@ -144,10 +141,9 @@ public class DashboardController {
             if (categoryFilterCombo != null) {
                 categoryFilterCombo.getItems().clear();
                 categoryFilterCombo.getItems().add("Toutes");
-                categoryFilterCombo.getItems().addAll(categories.stream()
-                        .map(Category::getName)
-                        .sorted()
-                        .collect(Collectors.toList()));
+                categoryFilterCombo.getItems().addAll(
+                        categories.stream().map(Category::getName).sorted().collect(Collectors.toList())
+                );
                 categoryFilterCombo.setValue("Toutes");
             }
 
@@ -159,18 +155,13 @@ public class DashboardController {
                 }
             });
 
-            // Mise à jour de la liste principale
             taskList.setAll(fetchedTasks);
-
-            // Mise à jour des statistiques avec toutes les tâches (non filtrées)
             updateTaskStatistics(fetchedTasks);
-
-            // Réappliquer les filtres existants
             applyFilters();
 
         } catch (SQLException e) {
-            System.err.println("Erreur de base de données lors du rafraîchissement du tableau de bord : " + e.getMessage());
             showAlert("Erreur de Base de Données", "Échec du chargement des données du tableau de bord.", Alert.AlertType.ERROR);
+            e.printStackTrace();
         }
     }
 
@@ -189,50 +180,34 @@ public class DashboardController {
     @FXML
     private void applyFilters() {
         filteredTaskList.setPredicate(task -> {
-            // Filtre par recherche de texte
+
             if (searchField != null && !searchField.getText().isEmpty()) {
                 String searchText = searchField.getText().toLowerCase();
-                boolean matchesSearch = task.getTitle().toLowerCase().contains(searchText) ||
-                        (task.getDescription() != null && task.getDescription().toLowerCase().contains(searchText));
-                if (!matchesSearch) {
-                    return false;
-                }
+                boolean matches = task.getTitle().toLowerCase().contains(searchText)
+                        || (task.getDescription() != null && task.getDescription().toLowerCase().contains(searchText));
+                if (!matches) return false;
             }
 
-            // Filtre par statut
-            if (statusFilterCombo != null && !statusFilterCombo.getValue().equals("Tous")) {
-                if (!task.getStatus().name().equals(statusFilterCombo.getValue())) {
-                    return false;
-                }
+            if (statusFilterCombo != null && !"Tous".equals(statusFilterCombo.getValue())) {
+                if (!task.getStatus().name().equals(statusFilterCombo.getValue())) return false;
             }
 
-            // Filtre par priorité
-            if (priorityFilterCombo != null && !priorityFilterCombo.getValue().equals("Tous")) {
-                if (!task.getPriority().name().equals(priorityFilterCombo.getValue())) {
-                    return false;
-                }
+            if (priorityFilterCombo != null && !"Tous".equals(priorityFilterCombo.getValue())) {
+                if (!task.getPriority().name().equals(priorityFilterCombo.getValue())) return false;
             }
 
-            // Filtre par catégorie
-            if (categoryFilterCombo != null && !categoryFilterCombo.getValue().equals("Toutes")) {
-                String selectedCategory = categoryFilterCombo.getValue();
-                if (task.getCategory() == null || !task.getCategory().equals(selectedCategory)) {
-                    return false;
-                }
+            if (categoryFilterCombo != null && !"Toutes".equals(categoryFilterCombo.getValue())) {
+                if (task.getCategory() == null || !task.getCategory().equals(categoryFilterCombo.getValue())) return false;
             }
 
-            // Filtre pour les tâches en retard
             if (overdueCheckBox != null && overdueCheckBox.isSelected()) {
-                if (task.getDueDate() == null || !task.getDueDate().isBefore(LocalDate.now())) {
-                    return false;
-                }
+                if (task.getDueDate() == null || !task.getDueDate().isBefore(LocalDate.now())) return false;
             }
 
             return true;
         });
 
-        List<Task> filteredTasks = filteredTaskList.stream().collect(Collectors.toList());
-        updateTaskStatistics(filteredTasks);
+        updateTaskStatistics(filteredTaskList.stream().collect(Collectors.toList()));
     }
 
     @FXML
@@ -253,9 +228,9 @@ public class DashboardController {
 
     @FXML
     private void handleEditTask() {
-        Task selectedTask = taskTableView.getSelectionModel().getSelectedItem();
-        if (selectedTask != null) {
-            showTaskView(selectedTask);
+        Task selected = taskTableView.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            showTaskView(selected);
         } else {
             showAlert("Aucune Tâche Sélectionnée", "Veuillez sélectionner une tâche à modifier.", Alert.AlertType.WARNING);
         }
@@ -263,30 +238,29 @@ public class DashboardController {
 
     @FXML
     private void handleDeleteTask() {
-        Task selectedTask = taskTableView.getSelectionModel().getSelectedItem();
-        if (selectedTask != null) {
-            // Confirmation avant suppression
-            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmAlert.setTitle("Confirmation de suppression");
-            confirmAlert.setHeaderText("Supprimer la tâche");
-            confirmAlert.setContentText("Êtes-vous sûr de vouloir supprimer la tâche \"" + selectedTask.getTitle() + "\" ?");
+        Task selected = taskTableView.getSelectionModel().getSelectedItem();
+        if (selected != null) {
 
-            confirmAlert.showAndWait().ifPresent(response -> {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Confirmation de suppression");
+            confirm.setHeaderText("Supprimer la tâche");
+            confirm.setContentText("Supprimer \"" + selected.getTitle() + "\" ?");
+
+            confirm.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     try {
-                        if (taskDAO.deleteTask(selectedTask.getId())) {
-                            showAlert("Succès", "Tâche supprimée avec succès.", Alert.AlertType.INFORMATION);
+                        if (taskDAO.deleteTask(selected.getId())) {
+                            showAlert("Succès", "Tâche supprimée.", Alert.AlertType.INFORMATION);
                             refreshDashboardData();
-                        } else {
-                            showAlert("Échec", "Échec de la suppression de la tâche.", Alert.AlertType.ERROR);
                         }
                     } catch (SQLException e) {
-                        showAlert("Erreur de Base de Données", "Échec de la suppression de la tâche : " + e.getMessage(), Alert.AlertType.ERROR);
+                        showAlert("Erreur", "Échec de la suppression : " + e.getMessage(), Alert.AlertType.ERROR);
                     }
                 }
             });
+
         } else {
-            showAlert("Aucune Tâche Sélectionnée", "Veuillez sélectionner une tâche à supprimer.", Alert.AlertType.WARNING);
+            showAlert("Aucune Tâche", "Veuillez sélectionner une tâche.", Alert.AlertType.WARNING);
         }
     }
 
@@ -307,12 +281,12 @@ public class DashboardController {
             showAlert("Accès refusé", "Seuls les administrateurs peuvent gérer les utilisateurs.", Alert.AlertType.WARNING);
         }
     }
+
     @FXML
     private void handleLogout() {
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle("Confirmation de déconnexion");
-        confirmAlert.setHeaderText("Déconnexion");
-        confirmAlert.setContentText("Êtes-vous sûr de vouloir vous déconnecter ?");
+        confirmAlert.setTitle("Déconnexion");
+        confirmAlert.setContentText("Voulez-vous vraiment vous déconnecter ?");
 
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -335,7 +309,7 @@ public class DashboardController {
             stage.setTitle("Connexion - Task Manager");
             stage.show();
         } catch (IOException e) {
-            showAlert("Erreur de Déconnexion", "Impossible de basculer vers la vue de connexion.", Alert.AlertType.ERROR);
+            showAlert("Erreur", "Impossible d'afficher la vue de connexion.", Alert.AlertType.ERROR);
             e.printStackTrace();
         }
     }
@@ -346,12 +320,14 @@ public class DashboardController {
             Parent root = loader.load();
 
             CategoryController controller = loader.getController();
-            // Si nécessaire, passer des données au contrôleur de catégories
+            // On passe la scène actuelle (la scène du Dashboard)
+            controller.setPreviousScene(welcomeLabel.getScene());
 
             Stage stage = getStage();
             stage.setScene(new Scene(root));
             stage.setTitle("Gestion des Catégories - Task Manager");
             stage.show();
+
         } catch (IOException e) {
             showAlert("Erreur de Navigation", "Impossible d'ouvrir la vue de gestion des catégories.", Alert.AlertType.ERROR);
             e.printStackTrace();
@@ -363,18 +339,16 @@ public class DashboardController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(USER_MANAGEMENT_VIEW_PATH));
             Parent root = loader.load();
 
-            // Si le contrôleur a besoin de l'utilisateur connecté (pour éviter de se supprimer lui-même)
             UserManagementController controller = loader.getController();
-            if (controller != null) {
-                controller.setCurrentUser(this.currentUser);
-            }
+            if (controller != null) controller.setCurrentUser(currentUser);
 
             Stage stage = getStage();
             stage.setScene(new Scene(root));
             stage.setTitle("Gestion des Utilisateurs - Task Manager");
             stage.show();
+
         } catch (IOException e) {
-            showAlert("Erreur de Navigation", "Impossible d'ouvrir la vue de gestion des utilisateurs.", Alert.AlertType.ERROR);
+            showAlert("Erreur", "Impossible d'ouvrir la vue de gestion des utilisateurs.", Alert.AlertType.ERROR);
             e.printStackTrace();
         }
     }
@@ -385,23 +359,18 @@ public class DashboardController {
             Parent root = loader.load();
 
             TaskController controller = loader.getController();
-            controller.setCurrentUserId(this.currentUser.getId());
-
-            // **Modification : Utiliser la nouvelle méthode pour passer la tâche**
-            // Si task est null, le contrôleur TaskController appellera handleNew().
-            // S'il est non-null, il passera en mode édition de cette tâche.
+            controller.setCurrentUserId(currentUser.getId());
             controller.setTaskToEdit(task);
 
-            Stage stage = new Stage(); // Créer une nouvelle fenêtre pour la vue Task
+            Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle(task == null ? "Créer une Tâche" : "Modifier la Tâche");
-            stage.showAndWait(); // Utiliser showAndWait() si le Dashboard doit attendre la fermeture
+            stage.showAndWait();
 
-            // Rafraîchir les données du tableau de bord après la fermeture de la fenêtre de la tâche
             refreshDashboardData();
 
         } catch (IOException e) {
-            showAlert("Erreur de Vue", "Impossible d'ouvrir la vue des tâches.", Alert.AlertType.ERROR);
+            showAlert("Erreur", "Impossible d'ouvrir la vue des tâches.", Alert.AlertType.ERROR);
             e.printStackTrace();
         }
     }
@@ -416,30 +385,26 @@ public class DashboardController {
 
     public void filterByDateRange(LocalDate startDate, LocalDate endDate) {
         filteredTaskList.setPredicate(task -> {
-            if (task.getDueDate() == null) {
-                return false;
-            }
+            if (task.getDueDate() == null) return false;
             return !task.getDueDate().isBefore(startDate) && !task.getDueDate().isAfter(endDate);
         });
 
-        List<Task> filteredTasks = filteredTaskList.stream().collect(Collectors.toList());
-        updateTaskStatistics(filteredTasks);
+        updateTaskStatistics(filteredTaskList.stream().collect(Collectors.toList()));
     }
 
     public void filterByKeyword(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             filteredTaskList.setPredicate(p -> true);
         } else {
-            String lowerCaseKeyword = keyword.toLowerCase();
-            filteredTaskList.setPredicate(task -> {
-                return task.getTitle().toLowerCase().contains(lowerCaseKeyword) ||
-                        (task.getDescription() != null &&
-                                task.getDescription().toLowerCase().contains(lowerCaseKeyword));
-            });
+            String lower = keyword.toLowerCase();
+            filteredTaskList.setPredicate(task ->
+                    task.getTitle().toLowerCase().contains(lower)
+                    || (task.getDescription() != null
+                    && task.getDescription().toLowerCase().contains(lower))
+            );
         }
 
-        List<Task> filteredTasks = filteredTaskList.stream().collect(Collectors.toList());
-        updateTaskStatistics(filteredTasks);
+        updateTaskStatistics(filteredTaskList.stream().collect(Collectors.toList()));
     }
 
     public List<Task> getDisplayedTasks() {
@@ -448,7 +413,6 @@ public class DashboardController {
 
     @FXML
     private void exportTasksToCSV() {
-        // à implémenter
-        showAlert("Export CSV", "Fonctionnalité d'export à implémenter", Alert.AlertType.INFORMATION);
+        showAlert("Export CSV", "Fonctionnalité d'export à implémenter.", Alert.AlertType.INFORMATION);
     }
 }
