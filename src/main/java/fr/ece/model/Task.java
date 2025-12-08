@@ -85,6 +85,10 @@ public class Task {
         return title;
     }
 
+    public String getUserName() {
+        return (user != null) ? user.getUsername() : "N/A";
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
