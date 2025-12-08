@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class DashboardController {
 
     // utilisateur actuellement connecté (envoyé par LoginController)
-    private User User;
+    private User CurrentUser;
 
     @FXML private Label welcomeLabel;
     @FXML private Label totalTasksLabel;
