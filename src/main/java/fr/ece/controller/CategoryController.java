@@ -323,10 +323,6 @@ private void handleBack() {
     }
 }
 
-
-
-
-
     // methodes utilitaires
     private void clearForm() {
         nameField.clear();
