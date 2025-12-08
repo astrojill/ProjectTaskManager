@@ -57,7 +57,7 @@ public class TaskController {
     private Task selectedTask = null;
     private boolean isEditMode = false;
 
-    private int currentUserId = 1; 
+    private int currentUserId = 1;
 
     @FXML
     public void initialize() {
@@ -125,7 +125,7 @@ public class TaskController {
 
         updateStatusBar();
     }
-    
+
     private void initializeFilters() {
         if (statusFilter != null) {
             statusFilter.getItems().addAll("Tous", "TODO", "IN_PROGRESS", "DONE");
@@ -138,9 +138,9 @@ public class TaskController {
         }
     }
 
-   
+
     private void initializeFormComboBoxes() {
-    
+
         if (statusComboBox != null) {
             statusComboBox.getItems().setAll(Status.values());
             statusComboBox.setConverter(new StringConverter<Status>() {
@@ -270,8 +270,8 @@ public class TaskController {
         updateCountLabel();
     }
 
-    
-     // Gère la sélection d'une tâche dans le tableau
+
+    // Gère la sélection d'une tâche dans le tableau
     private void onTaskSelected(Task task) {
         selectedTask = task;
 
@@ -283,8 +283,8 @@ public class TaskController {
         displayTaskDetails(task);
     }
 
-    
-     // Affiche les détails d'une tâche dans le formulaire
+
+    // Affiche les détails d'une tâche dans le formulaire
 
     private void displayTaskDetails(Task task) {
         if (!isEditMode) {
@@ -313,8 +313,8 @@ public class TaskController {
         }
     }
 
-    
-     // Active ou désactive les champs du formulaire
+
+    // Active ou désactive les champs du formulaire
     private void setFormFieldsDisabled(boolean disabled) {
         if (titleField != null) titleField.setDisable(disabled);
         if (descriptionArea != null) descriptionArea.setDisable(disabled);
@@ -326,35 +326,35 @@ public class TaskController {
         if (cancelButton != null) cancelButton.setDisable(disabled);
     }
 
-     // Met à jour l'état du bouton Enregistrer
+    // Met à jour l'état du bouton Enregistrer
     private void updateSaveButtonState() {
         if (!isEditMode || saveButton == null) return;
 
         boolean isValid =
                 titleField != null && titleField.getText() != null && !titleField.getText().trim().isEmpty()
-                && statusComboBox != null && statusComboBox.getValue() != null
-                && priorityComboBox != null && priorityComboBox.getValue() != null;
+                        && statusComboBox != null && statusComboBox.getValue() != null
+                        && priorityComboBox != null && priorityComboBox.getValue() != null;
 
         saveButton.setDisable(!isValid);
     }
 
-     // Recherche des tâches
+    // Recherche des tâches
 
     @FXML
     private void handleSearch() {
         applyFilters();
     }
 
-    
-     // Changement de filtre
+
+    // Changement de filtre
 
     @FXML
     private void handleFilterChange() {
         applyFilters();
     }
 
-    
-     //  Créer une nouvelle tâche
+
+    //  Créer une nouvelle tâche
     @FXML
     private void handleNew() {
         isEditMode = true;
@@ -383,9 +383,9 @@ public class TaskController {
         if (titleField != null) titleField.requestFocus();
     }
 
-    
-     // Modifier une tâche existante
-    
+
+    // Modifier une tâche existante
+
     @FXML
     private void handleEdit() {
         if (selectedTask == null) {
@@ -396,9 +396,9 @@ public class TaskController {
         setTaskToEdit(selectedTask);
     }
 
-    
-     // Enregistrer une tâche (création ou modification)
-    
+
+    // Enregistrer une tâche (création ou modification)
+
     @FXML
     private void handleSave() {
         if (titleField == null || statusComboBox == null || priorityComboBox == null) {
@@ -471,8 +471,8 @@ public class TaskController {
         }
     }
 
-    
-     // Annuler l'édition
+
+    // Annuler l'édition
     @FXML
     private void handleCancel() {
         isEditMode = false;
@@ -495,12 +495,16 @@ public class TaskController {
         if (deleteButton != null) deleteButton.setDisable(true);
         if (statusButton != null) statusButton.setDisable(true);
 
+        Stage stage = (Stage) cancelButton.getScene().getWindow();
+        // do what you have to do
+        stage.close();
+
         hideMessage();
         updateStatusBar("Prêt");
     }
 
-    
-     // Supprimer une tâche
+
+    // Supprimer une tâche
 
     @FXML
     private void handleDelete() {
@@ -533,8 +537,8 @@ public class TaskController {
         }
     }
 
-    
-     // Changer le statut d'une tâche
+
+    // Changer le statut d'une tâche
     @FXML
     private void handleChangeStatus() {
         if (selectedTask == null) {
@@ -565,8 +569,8 @@ public class TaskController {
         });
     }
 
-     // Retour à l'écran précédent (ferme la fenêtre)
-    
+    // Retour à l'écran précédent (ferme la fenêtre)
+
     @FXML
     private void handleBack() {
         if (tasksTable != null) {
@@ -575,9 +579,9 @@ public class TaskController {
         }
     }
 
-    
-     // Met à jour le label de comptage
-    
+
+    // Met à jour le label de comptage
+
     private void updateCountLabel() {
         if (countLabel == null) return;
 
@@ -585,8 +589,8 @@ public class TaskController {
         countLabel.setText(count + " tâche" + (count > 1 ? "s" : ""));
     }
 
-     // Met à jour la barre de statut
-    
+    // Met à jour la barre de statut
+
     private void updateStatusBar() {
         updateStatusBar("Prêt");
     }
@@ -597,8 +601,8 @@ public class TaskController {
         }
     }
 
-     // Affiche un message d'erreur
-     
+    // Affiche un message d'erreur
+
     private void showError(String message) {
         if (messageLabel != null) {
             messageLabel.setText("❌ " + message);
@@ -610,9 +614,9 @@ public class TaskController {
         }
     }
 
-    
-     // Affiche un message de succès
-    
+
+    // Affiche un message de succès
+
     private void showSuccess(String message) {
         if (messageLabel != null) {
             messageLabel.setText("✓ " + message);
@@ -625,8 +629,8 @@ public class TaskController {
     }
 
 
-     // Cache le message
-    
+    // Cache le message
+
     private void hideMessage() {
         if (messageLabel != null) {
             messageLabel.setVisible(false);
@@ -634,8 +638,8 @@ public class TaskController {
         }
     }
 
-     // Définit la tâche à modifier ou à créer
-    
+    // Définit la tâche à modifier ou à créer
+
     public void setTaskToEdit(Task task) {
         if (task != null) {
             this.selectedTask = task;
@@ -676,8 +680,8 @@ public class TaskController {
     }
 
 
-     // Définit l'utilisateur courant (appelé depuis DashboardController)
-     
+    // Définit l'utilisateur courant (appelé depuis DashboardController)
+
     public void setCurrentUserId(int userId) {
         this.currentUserId = userId;
         loadTasks();
