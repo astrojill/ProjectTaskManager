@@ -5,7 +5,6 @@ import fr.ece.model.Category;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -19,10 +18,8 @@ public class CategoryController {
 
     private final CategoryDAO categoryDAO = new CategoryDAO();
 
+    // Catégorie actuellement en édition (null = mode "nouvelle")
     private Category currentCategory = null;
-
-    // scène précédente (pour le bouton Retour)
-    private Scene previousScene;
 
     // tous les elements FXML
 
@@ -79,10 +76,11 @@ public class CategoryController {
 
     @FXML
     public void initialize() {
-        
+        // Liaison colonnes / attributs de Category
         idColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleIntegerProperty(cell.getValue().getId()).asObject());
         nameColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(cell.getValue().getName()));
 
+        // là on n’a pas description
         descriptionColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(""));
         tasksCountColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleIntegerProperty(0).asObject());
 
@@ -102,11 +100,6 @@ public class CategoryController {
 
         // Charger les catégories au démarrage
         loadCategories();
-    }
-
-    // appelé par le Dashboard pour enregistrer la scène précédente
-    public void setPreviousScene(Scene scene) {
-        this.previousScene = scene;
     }
 
     // Charger toutes les catégories dans la TableView
@@ -304,16 +297,12 @@ public class CategoryController {
         hideMessage();
     }
 
-    //  bouton retour : revenir à la scène précédente
     @FXML
     private void handleBack() {
-        if (previousScene != null) {
-            Stage stage = (Stage) categoriesTable.getScene().getWindow();
-            stage.setScene(previousScene);
-        } else {
-            System.out.println("⚠ Aucun écran précédent enregistré !");
-        }
+        Stage stage = (Stage) categoriesTable.getScene().getWindow();
+        stage.close();
     }
+
 
     // methodes utilitaires
     private void clearForm() {
