@@ -101,7 +101,7 @@ private void goToDashboard(ActionEvent event, User user) {
         DashboardController controller = loader.getController();
 
         // on lui passe l'utilisateur connecté
-        controller.setCurrentUser(user);
+        controller.setUser(user);
 
         // on récupère la fenêtre actuelle et on affiche le dashboard
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
