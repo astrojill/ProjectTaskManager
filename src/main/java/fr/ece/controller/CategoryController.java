@@ -5,9 +5,11 @@ import fr.ece.model.Category;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,6 +21,14 @@ public class CategoryController {
 
     // Catégorie actuellement en édition (null = mode "nouvelle")
     private Category currentCategory = null;
+
+    // 🌸 Scène précédente (le dashboard) - pour le bouton "Retour"
+    private Scene previousScene;
+
+    // ----------- reçu depuis le Dashboard -----------
+    public void setPreviousScene(Scene scene) {
+        this.previousScene = scene;
+    }
 
     // tous les elements FXML
 
@@ -76,12 +86,16 @@ public class CategoryController {
     @FXML
     public void initialize() {
         // Liaison colonnes / attributs de Category
-        idColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleIntegerProperty(cell.getValue().getId()).asObject());
-        nameColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(cell.getValue().getName()));
+        idColumn.setCellValueFactory(cell ->
+                new javafx.beans.property.SimpleIntegerProperty(cell.getValue().getId()).asObject());
+        nameColumn.setCellValueFactory(cell ->
+                new javafx.beans.property.SimpleStringProperty(cell.getValue().getName()));
 
-        // là on n’a pas description
-        descriptionColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(""));
-        tasksCountColumn.setCellValueFactory(cell -> new javafx.beans.property.SimpleIntegerProperty(0).asObject());
+        // Pour l’instant : pas de description / nb tâches
+        descriptionColumn.setCellValueFactory(cell ->
+                new javafx.beans.property.SimpleStringProperty(""));
+        tasksCountColumn.setCellValueFactory(cell ->
+                new javafx.beans.property.SimpleIntegerProperty(0).asObject());
 
         // Formulaire désactivé au départ
         setFormEnabled(false);
@@ -296,9 +310,15 @@ public class CategoryController {
         hideMessage();
     }
 
+    // bouton "Retour" : revenir à la scène précédente (dashboard avec user déjà chargé)
     @FXML
     private void handleBack() {
-        statusLabel.setText("Retour (à implémenter).");
+        if (previousScene != null) {
+            Stage stage = (Stage) categoriesTable.getScene().getWindow();
+            stage.setScene(previousScene);
+        } else {
+            System.out.println(" Aucun écran précédent enregistré (previousScene = null)");
+        }
     }
 
     // methodes utilitaires

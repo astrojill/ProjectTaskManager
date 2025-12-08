@@ -68,15 +68,6 @@
                     <Text text="Utilisateurs" styleClass="stat-label"/>
                     <Text fx:id="regularUsersLabel" text="0" styleClass="stat-value"/>
                 </VBox>
-
-                <!-- Active Today -->
-                <VBox styleClass="stat-card-success" spacing="10" alignment="CENTER" HBox.hgrow="ALWAYS">
-                    <padding>
-                        <Insets top="20" right="20" bottom="20" left="20"/>
-                    </padding>
-                    <Text text="Actifs Aujourd'hui" styleClass="stat-label"/>
-                    <Text fx:id="activeUsersLabel" text="0" styleClass="stat-value"/>
-                </VBox>
             </HBox>
 
             <!-- Actions Bar -->
@@ -103,14 +94,38 @@
             </HBox>
 
             <!-- Users Table -->
-            <TableView fx:id="usersTable" VBox.vgrow="ALWAYS" styleClass="table-view">
+            <TableView fx:id="usersTable"
+                       VBox.vgrow="ALWAYS"
+                       styleClass="table-view">
                 <columns>
-                    <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
-                    <TableColumn fx:id="usernameColumn" text="Nom d'utilisateur" prefWidth="200"/>
-                    <TableColumn fx:id="roleColumn" text="Rôle" prefWidth="120"/>
-                    <TableColumn fx:id="createdAtColumn" text="Date création" prefWidth="150"/>
-                    <TableColumn fx:id="tasksCountColumn" text="Tâches" prefWidth="80"/>
-                    <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="250"/>
+                    <TableColumn fx:id="idColumn"
+                                 text="ID"
+                                 minWidth="60"
+                                 prefWidth="60"
+                                 maxWidth="80"
+                                 resizable="false"/>
+                    <TableColumn fx:id="usernameColumn"
+                                 text="Nom d'utilisateur"
+                                 minWidth="150"
+                                 prefWidth="200"/>
+                    <TableColumn fx:id="roleColumn"
+                                 text="Rôle"
+                                 minWidth="100"
+                                 prefWidth="120"/>
+                    <TableColumn fx:id="createdAtColumn"
+                                 text="Date création"
+                                 minWidth="130"
+                                 prefWidth="150"/>
+                    <TableColumn fx:id="tasksCountColumn"
+                                 text="Tâches"
+                                 minWidth="70"
+                                 prefWidth="80"
+                                 maxWidth="100"
+                                 resizable="false"/>
+                    <TableColumn fx:id="actionsColumn"
+                                 text="Actions"
+                                 minWidth="200"
+                                 prefWidth="250"/>
                 </columns>
                 <placeholder>
                     <Label text="Aucun utilisateur trouvé" styleClass="placeholder-label"/>

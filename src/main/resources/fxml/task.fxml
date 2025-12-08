@@ -59,6 +59,15 @@
                               styleClass="combo-box"/>
                 </VBox>
 
+                <!-- Category -->
+                <VBox spacing="8">
+                    <Label text="Assignée à *" styleClass="form-label"/>
+                    <ComboBox fx:id="userComboBox"
+                              promptText="Sélectionnez une utilisateur"
+                              maxWidth="Infinity"
+                              styleClass="combo-box"/>
+                </VBox>
+
                 <!-- Priority -->
                 <VBox spacing="8">
                     <Label text="Priorité *" styleClass="form-label"/>

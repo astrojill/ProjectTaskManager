@@ -245,7 +245,7 @@ public class RegisterController {
 
     private void redirectToLogin() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fr/ece/view/login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
             Scene scene = new Scene(loader.load());
 
             Stage stage = (Stage) usernameField.getScene().getWindow();

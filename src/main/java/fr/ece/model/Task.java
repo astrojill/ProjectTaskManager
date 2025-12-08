@@ -30,8 +30,9 @@ public class Task {
 
     // Relations
     private Category category;          // catégorie liée (peut être null si category_id = null)
-    private String categoryName;
+    private String categoryName;        // Nom de la catégorie (pour affichage)
     private User user;                  // utilisateur propriétaire (user_id NOT NULL)
+    private String userName;            // Nom de l'utilisateur (pour affichage)
 
     // Timestamps
     private LocalDateTime createdAt;    // created_at
@@ -168,12 +169,12 @@ public class Task {
     }
 
     public void setUser(User user) {
-        // Tats : user_id NOT NULL → normalement toujours un user
+        // user_id NOT NULL → normalement toujours un user
         this.user = user;
     }
 
-    public int getUserId() {
-        return (user != null) ? user.getId() : 0;
+    public Integer getUserId() {
+        return (user != null) ? user.getId() : null;
     }
 
     public void setUserId(int userId) {
@@ -181,6 +182,24 @@ public class Task {
             this.user = new User();
         }
         this.user.setId(userId);
+    }
+
+    /**
+     * Retourne le nom de l'utilisateur assigné à la tâche
+     * Priorité : userName (si défini) > user.getUsername() > "Non assigné"
+     */
+    public String getUserName() {
+        if (userName != null) {
+            return userName;
+        }
+        return (user != null) ? user.getUsername() : "Non assigné";
+    }
+
+    /**
+     * Définit le nom de l'utilisateur (pour affichage dans les tables)
+     */
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -199,6 +218,7 @@ public class Task {
         this.updatedAt = updatedAt;
     }
 
+    @Override
     public String toString() {
         return "Task { id=" + id +
                 ", title='" + title + "'" +

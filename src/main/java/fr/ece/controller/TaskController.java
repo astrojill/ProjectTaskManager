@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class TaskController {
 
@@ -57,146 +56,152 @@ public class TaskController {
     private ObservableList<Task> filteredList = FXCollections.observableArrayList();
     private Task selectedTask = null;
     private boolean isEditMode = false;
-    private int currentUserId = 1; // À remplacer par l'utilisateur connecté
 
-    /**
-     * Méthode d'initialisation appelée automatiquement après le chargement du FXML
-     */
+    private int currentUserId = 1;
+
     @FXML
     public void initialize() {
-        // Configuration des colonnes du tableau
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
-        dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
-        categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
 
-        // Formatter pour la date
-        dueDateColumn.setCellFactory(column -> new TableCell<Task, LocalDate>() {
-            private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-            @Override
-            protected void updateItem(LocalDate item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(formatter.format(item));
-                }
+        if (tasksTable != null) {
+            if (idColumn != null) {
+                idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
             }
-        });
+            if (titleColumn != null) {
+                titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+            }
+            if (statusColumn != null) {
+                statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+            }
+            if (priorityColumn != null) {
+                priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
+            }
+            if (dueDateColumn != null) {
+                dueDateColumn.setCellValueFactory(new PropertyValueFactory<>("dueDate"));
 
-        // Initialiser les filtres
+                dueDateColumn.setCellFactory(column -> new TableCell<Task, LocalDate>() {
+                    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+                    @Override
+                    protected void updateItem(LocalDate item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null) {
+                            setText(null);
+                        } else {
+                            setText(formatter.format(item));
+                        }
+                    }
+                });
+            }
+            if (categoryColumn != null) {
+                categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
+            }
+
+            tasksTable.setItems(filteredList);
+
+            tasksTable.getSelectionModel().selectedItemProperty().addListener(
+                    (obs, oldSelection, newSelection) -> {
+                        if (newSelection != null) {
+                            onTaskSelected(newSelection);
+                        }
+                    }
+            );
+        }
+
         initializeFilters();
 
-        // Initialiser les ComboBox du formulaire
         initializeFormComboBoxes();
 
-        // Charger les données
         loadTasks();
 
-        // Listener pour la sélection dans le tableau
-        tasksTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) -> {
-                    if (newSelection != null) {
-                        onTaskSelected(newSelection);
-                    }
-                }
-        );
-
-        // Listener pour activer/désactiver le bouton Enregistrer
-        titleField.textProperty().addListener((obs, oldVal, newVal) -> {
-            updateSaveButtonState();
-        });
-
-        statusComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-            updateSaveButtonState();
-        });
-
-        priorityComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-            updateSaveButtonState();
-        });
+        if (titleField != null) {
+            titleField.textProperty().addListener((obs, oldVal, newVal) -> updateSaveButtonState());
+        }
+        if (statusComboBox != null) {
+            statusComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateSaveButtonState());
+        }
+        if (priorityComboBox != null) {
+            priorityComboBox.valueProperty().addListener((obs, oldVal, newVal) -> updateSaveButtonState());
+        }
 
         updateStatusBar();
     }
 
-    /**
-     * Initialise les filtres de statut et priorité
-     */
     private void initializeFilters() {
-        // Filtre de statut
-        statusFilter.getItems().addAll("Tous", "TODO", "IN_PROGRESS", "DONE");
-        statusFilter.setValue("Tous");
+        if (statusFilter != null) {
+            statusFilter.getItems().addAll("Tous", "TODO", "IN_PROGRESS", "DONE");
+            statusFilter.setValue("Tous");
+        }
 
-        // Filtre de priorité
-        priorityFilter.getItems().addAll("Tous", "LOW", "MEDIUM", "HIGH");
-        priorityFilter.setValue("Tous");
+        if (priorityFilter != null) {
+            priorityFilter.getItems().addAll("Tous", "LOW", "MEDIUM", "HIGH");
+            priorityFilter.setValue("Tous");
+        }
     }
 
-    /**
-     * Initialise les ComboBox du formulaire
-     */
+
     private void initializeFormComboBoxes() {
-        // Status ComboBox
-        statusComboBox.getItems().setAll(Status.values());
-        statusComboBox.setConverter(new StringConverter<Status>() {
-            @Override
-            public String toString(Status status) {
-                if (status == null) return "";
-                switch (status) {
-                    case TODO: return "À faire";
-                    case IN_PROGRESS: return "En cours";
-                    case DONE: return "Terminé";
-                    default: return status.toString();
+
+        if (statusComboBox != null) {
+            statusComboBox.getItems().setAll(Status.values());
+            statusComboBox.setConverter(new StringConverter<Status>() {
+                @Override
+                public String toString(Status status) {
+                    if (status == null) return "";
+                    switch (status) {
+                        case TODO: return "À faire";
+                        case IN_PROGRESS: return "En cours";
+                        case DONE: return "Terminé";
+                        default: return status.toString();
+                    }
                 }
-            }
 
-            @Override
-            public Status fromString(String string) {
-                return null; // Non utilisé
-            }
-        });
-
-        // Priority ComboBox
-        priorityComboBox.getItems().setAll(Priority.values());
-        priorityComboBox.setConverter(new StringConverter<Priority>() {
-            @Override
-            public String toString(Priority priority) {
-                if (priority == null) return "";
-                switch (priority) {
-                    case LOW: return "Basse";
-                    case MEDIUM: return "Moyenne";
-                    case HIGH: return "Haute";
-                    default: return priority.toString();
+                @Override
+                public Status fromString(String string) {
+                    return null;
                 }
-            }
+            });
+        }
 
-            @Override
-            public Priority fromString(String string) {
-                return null; // Non utilisé
-            }
-        });
+        if (priorityComboBox != null) {
+            priorityComboBox.getItems().setAll(Priority.values());
+            priorityComboBox.setConverter(new StringConverter<Priority>() {
+                @Override
+                public String toString(Priority priority) {
+                    if (priority == null) return "";
+                    switch (priority) {
+                        case LOW: return "Basse";
+                        case MEDIUM: return "Moyenne";
+                        case HIGH: return "Haute";
+                        default: return priority.toString();
+                    }
+                }
 
-        // Category ComboBox
-        loadCategories();
-        categoryComboBox.setConverter(new StringConverter<Category>() {
-            @Override
-            public String toString(Category category) {
-                return category == null ? "" : category.getName();
-            }
+                @Override
+                public Priority fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+        }
 
-            @Override
-            public Category fromString(String string) {
-                return null; // Non utilisé
-            }
-        });
+        if (categoryComboBox != null) {
+            loadCategories();
+            categoryComboBox.setConverter(new StringConverter<Category>() {
+                @Override
+                public String toString(Category category) {
+                    return category == null ? "" : category.getName();
+                }
+
+                @Override
+                public Category fromString(String string) {
+                    return null; // Non utilisé
+                }
+            });
+        }
     }
 
-    /**
-     * Charge les catégories dans le ComboBox
-     */
     private void loadCategories() {
+        if (categoryComboBox == null) return;
+
         try {
             List<Category> categories = categoryDAO.getAllCategories();
             categoryComboBox.getItems().clear();
@@ -208,9 +213,7 @@ public class TaskController {
         }
     }
 
-    /**
-     * Charge toutes les tâches de l'utilisateur
-     */
+
     private void loadTasks() {
         tasksList.clear();
         try {
@@ -223,72 +226,86 @@ public class TaskController {
         }
     }
 
-    /**
-     * Applique les filtres de recherche, statut et priorité
-     */
+
     private void applyFilters() {
-        String searchText = searchField.getText().toLowerCase().trim();
-        String statusValue = statusFilter.getValue();
-        String priorityValue = priorityFilter.getValue();
+        String searchText = "";
+        if (searchField != null && searchField.getText() != null) {
+            searchText = searchField.getText().toLowerCase().trim();
+        }
+
+        String statusValue = "Tous";
+        if (statusFilter != null && statusFilter.getValue() != null) {
+            statusValue = statusFilter.getValue();
+        }
+
+        String priorityValue = "Tous";
+        if (priorityFilter != null && priorityFilter.getValue() != null) {
+            priorityValue = priorityFilter.getValue();
+        }
 
         filteredList.clear();
 
         for (Task task : tasksList) {
             // Filtre de recherche
-            boolean matchesSearch = searchText.isEmpty() ||
-                    task.getTitle().toLowerCase().contains(searchText) ||
-                    (task.getDescription() != null && task.getDescription().toLowerCase().contains(searchText));
+            boolean matchesSearch = searchText.isEmpty()
+                    || task.getTitle().toLowerCase().contains(searchText)
+                    || (task.getDescription() != null && task.getDescription().toLowerCase().contains(searchText));
 
             // Filtre de statut
-            boolean matchesStatus = statusValue.equals("Tous") ||
-                    task.getStatus().toString().equals(statusValue);
+            boolean matchesStatus = statusValue.equals("Tous")
+                    || task.getStatus().toString().equals(statusValue);
 
             // Filtre de priorité
-            boolean matchesPriority = priorityValue.equals("Tous") ||
-                    task.getPriority().toString().equals(priorityValue);
+            boolean matchesPriority = priorityValue.equals("Tous")
+                    || task.getPriority().toString().equals(priorityValue);
 
             if (matchesSearch && matchesStatus && matchesPriority) {
                 filteredList.add(task);
             }
         }
 
-        tasksTable.setItems(filteredList);
+        if (tasksTable != null) {
+            tasksTable.setItems(filteredList);
+        }
         updateCountLabel();
     }
 
-    /**
-     * Gère la sélection d'une tâche dans le tableau
-     */
+
+    // Gère la sélection d'une tâche dans le tableau
     private void onTaskSelected(Task task) {
         selectedTask = task;
-        editButton.setDisable(false);
-        deleteButton.setDisable(false);
-        statusButton.setDisable(false);
 
-        // Afficher les détails dans le formulaire (lecture seule)
+        if (editButton != null) editButton.setDisable(false);
+        if (deleteButton != null) deleteButton.setDisable(false);
+        if (statusButton != null) statusButton.setDisable(false);
+
+        // Afficher les détails dans le formulaire (lecture seule ou pas selon le mode)
         displayTaskDetails(task);
     }
 
-    /**
-     * Affiche les détails d'une tâche dans le formulaire
-     */
+
+    // Affiche les détails d'une tâche dans le formulaire
+
     private void displayTaskDetails(Task task) {
         if (!isEditMode) {
-            formTitle.setText("Détails de la tâche");
-            titleField.setText(task.getTitle());
-            descriptionArea.setText(task.getDescription());
-            dueDatePicker.setValue(task.getDueDate());
-            statusComboBox.setValue(task.getStatus());
-            priorityComboBox.setValue(task.getPriority());
+            if (formTitle != null) formTitle.setText("Détails de la tâche");
+            if (titleField != null) titleField.setText(task.getTitle());
+            if (descriptionArea != null) descriptionArea.setText(task.getDescription());
+            if (dueDatePicker != null) dueDatePicker.setValue(task.getDueDate());
+            if (statusComboBox != null) statusComboBox.setValue(task.getStatus());
+            if (priorityComboBox != null) priorityComboBox.setValue(task.getPriority());
 
-            // Trouver la catégorie correspondante
-            if (task.getCategoryId() != null) {
-                categoryComboBox.setValue(categoryComboBox.getItems().stream()
-                        .filter(c -> c != null && c.getId() == task.getCategoryId())
-                        .findFirst()
-                        .orElse(null));
-            } else {
-                categoryComboBox.setValue(null);
+            if (categoryComboBox != null) {
+                if (task.getCategoryId() != null) {
+                    categoryComboBox.setValue(
+                            categoryComboBox.getItems().stream()
+                                    .filter(c -> c != null && c.getId() == task.getCategoryId())
+                                    .findFirst()
+                                    .orElse(null)
+                    );
+                } else {
+                    categoryComboBox.setValue(null);
+                }
             }
 
             // Désactiver les champs en mode lecture
@@ -296,82 +313,79 @@ public class TaskController {
         }
     }
 
-    /**
-     * Active ou désactive les champs du formulaire
-     */
+
+    // Active ou désactive les champs du formulaire
     private void setFormFieldsDisabled(boolean disabled) {
-        titleField.setDisable(disabled);
-        descriptionArea.setDisable(disabled);
-        dueDatePicker.setDisable(disabled);
-        statusComboBox.setDisable(disabled);
-        priorityComboBox.setDisable(disabled);
-        categoryComboBox.setDisable(disabled);
-        saveButton.setDisable(disabled);
-        cancelButton.setDisable(disabled);
+        if (titleField != null) titleField.setDisable(disabled);
+        if (descriptionArea != null) descriptionArea.setDisable(disabled);
+        if (dueDatePicker != null) dueDatePicker.setDisable(disabled);
+        if (statusComboBox != null) statusComboBox.setDisable(disabled);
+        if (priorityComboBox != null) priorityComboBox.setDisable(disabled);
+        if (categoryComboBox != null) categoryComboBox.setDisable(disabled);
+        if (saveButton != null) saveButton.setDisable(disabled);
+        if (cancelButton != null) cancelButton.setDisable(disabled);
     }
 
-    /**
-     * Met à jour l'état du bouton Enregistrer
-     */
+    // Met à jour l'état du bouton Enregistrer
     private void updateSaveButtonState() {
-        if (isEditMode) {
-            boolean isValid = titleField.getText() != null && !titleField.getText().trim().isEmpty()
-                    && statusComboBox.getValue() != null
-                    && priorityComboBox.getValue() != null;
-            saveButton.setDisable(!isValid);
-        }
+        if (!isEditMode || saveButton == null) return;
+
+        boolean isValid =
+                titleField != null && titleField.getText() != null && !titleField.getText().trim().isEmpty()
+                        && statusComboBox != null && statusComboBox.getValue() != null
+                        && priorityComboBox != null && priorityComboBox.getValue() != null;
+
+        saveButton.setDisable(!isValid);
     }
 
-    /**
-     * Recherche des tâches
-     */
+    // Recherche des tâches
+
     @FXML
     private void handleSearch() {
         applyFilters();
     }
 
-    /**
-     * Changement de filtre
-     */
+
+    // Changement de filtre
+
     @FXML
     private void handleFilterChange() {
         applyFilters();
     }
 
-    /**
-     * Créer une nouvelle tâche
-     */
+
+    //  Créer une nouvelle tâche
     @FXML
     private void handleNew() {
         isEditMode = true;
         selectedTask = null;
 
-        // Réinitialiser le formulaire
-        formTitle.setText("Nouvelle tâche");
-        titleField.clear();
-        descriptionArea.clear();
-        dueDatePicker.setValue(null);
-        statusComboBox.setValue(Status.TODO);
-        priorityComboBox.setValue(Priority.MEDIUM);
-        categoryComboBox.setValue(null);
+        if (formTitle != null) formTitle.setText("Nouvelle tâche");
+        if (titleField != null) titleField.clear();
+        if (descriptionArea != null) descriptionArea.clear();
+        if (dueDatePicker != null) dueDatePicker.setValue(null);
+        if (statusComboBox != null) statusComboBox.setValue(Status.TODO);
+        if (priorityComboBox != null) priorityComboBox.setValue(Priority.MEDIUM);
+        if (categoryComboBox != null) categoryComboBox.setValue(null);
 
-        // Activer les champs
         setFormFieldsDisabled(false);
 
-        // Désélectionner dans le tableau
-        tasksTable.getSelectionModel().clearSelection();
-        editButton.setDisable(true);
-        deleteButton.setDisable(true);
-        statusButton.setDisable(true);
+        if (tasksTable != null) {
+            tasksTable.getSelectionModel().clearSelection();
+        }
+        if (editButton != null) editButton.setDisable(true);
+        if (deleteButton != null) deleteButton.setDisable(true);
+        if (statusButton != null) statusButton.setDisable(true);
 
         hideMessage();
         updateStatusBar("Création d'une nouvelle tâche...");
-        titleField.requestFocus();
+
+        if (titleField != null) titleField.requestFocus();
     }
 
-    /**
-     * Modifier une tâche existante
-     */
+
+    // Modifier une tâche existante
+
     @FXML
     private void handleEdit() {
         if (selectedTask == null) {
@@ -379,26 +393,28 @@ public class TaskController {
             return;
         }
 
-        isEditMode = true;
-        formTitle.setText("Modifier la tâche");
-        setFormFieldsDisabled(false);
-        updateStatusBar("Modification de la tâche...");
+        setTaskToEdit(selectedTask);
     }
 
-    /**
-     * Enregistrer une tâche (création ou modification)
-     */
+
+    // Enregistrer une tâche (création ou modification)
+
     @FXML
     private void handleSave() {
+        if (titleField == null || statusComboBox == null || priorityComboBox == null) {
+            showError("Formulaire incomplet (problème de FXML)");
+            return;
+        }
+
         String title = titleField.getText().trim();
-        String description = descriptionArea.getText().trim();
-        LocalDate dueDate = dueDatePicker.getValue();
+        String description = (descriptionArea != null && descriptionArea.getText() != null)
+                ? descriptionArea.getText().trim() : "";
+        LocalDate dueDate = (dueDatePicker != null) ? dueDatePicker.getValue() : null;
         Status status = statusComboBox.getValue();
         Priority priority = priorityComboBox.getValue();
-        Category category = categoryComboBox.getValue();
+        Category category = (categoryComboBox != null) ? categoryComboBox.getValue() : null;
         Integer categoryId = (category != null) ? category.getId() : null;
 
-        // Validation
         if (title.isEmpty()) {
             showError("Le titre de la tâche est obligatoire");
             return;
@@ -446,7 +462,6 @@ public class TaskController {
                 }
             }
 
-            // Recharger et réinitialiser
             loadTasks();
             handleCancel();
 
@@ -456,39 +471,40 @@ public class TaskController {
         }
     }
 
-    /**
-     * Annuler l'édition
-     */
+
+    // Annuler l'édition
     @FXML
     private void handleCancel() {
         isEditMode = false;
         selectedTask = null;
 
-        // Réinitialiser le formulaire
-        formTitle.setText("Détails de la tâche");
-        titleField.clear();
-        descriptionArea.clear();
-        dueDatePicker.setValue(null);
-        statusComboBox.setValue(null);
-        priorityComboBox.setValue(null);
-        categoryComboBox.setValue(null);
+        if (formTitle != null) formTitle.setText("Détails de la tâche");
+        if (titleField != null) titleField.clear();
+        if (descriptionArea != null) descriptionArea.clear();
+        if (dueDatePicker != null) dueDatePicker.setValue(null);
+        if (statusComboBox != null) statusComboBox.setValue(null);
+        if (priorityComboBox != null) priorityComboBox.setValue(null);
+        if (categoryComboBox != null) categoryComboBox.setValue(null);
 
-        // Désactiver les champs
         setFormFieldsDisabled(true);
 
-        // Désélectionner
-        tasksTable.getSelectionModel().clearSelection();
-        editButton.setDisable(true);
-        deleteButton.setDisable(true);
-        statusButton.setDisable(true);
+        if (tasksTable != null) {
+            tasksTable.getSelectionModel().clearSelection();
+        }
+        if (editButton != null) editButton.setDisable(true);
+        if (deleteButton != null) deleteButton.setDisable(true);
+        if (statusButton != null) statusButton.setDisable(true);
+
+        Stage stage = (Stage) cancelButton.getScene().getWindow();
+        stage.close();
 
         hideMessage();
         updateStatusBar("Prêt");
     }
 
-    /**
-     * Supprimer une tâche
-     */
+
+    // Supprimer une tâche
+
     @FXML
     private void handleDelete() {
         if (selectedTask == null) {
@@ -496,7 +512,6 @@ public class TaskController {
             return;
         }
 
-        // Confirmation
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
         alert.setHeaderText("Supprimer la tâche");
@@ -521,9 +536,8 @@ public class TaskController {
         }
     }
 
-    /**
-     * Changer le statut d'une tâche
-     */
+
+    // Changer le statut d'une tâche
     @FXML
     private void handleChangeStatus() {
         if (selectedTask == null) {
@@ -531,7 +545,6 @@ public class TaskController {
             return;
         }
 
-        // Créer un dialogue pour choisir le nouveau statut
         ChoiceDialog<Status> dialog = new ChoiceDialog<>(selectedTask.getStatus(), Status.values());
         dialog.setTitle("Changer le statut");
         dialog.setHeaderText("Changer le statut de la tâche");
@@ -555,74 +568,125 @@ public class TaskController {
         });
     }
 
-    /**
-     * Retour à l'écran précédent
-     */
+    // Retour à l'écran précédent (ferme la fenêtre)
+
     @FXML
     private void handleBack() {
-        Stage stage = (Stage) tasksTable.getScene().getWindow();
-        stage.close();
+        if (tasksTable != null) {
+            Stage stage = (Stage) tasksTable.getScene().getWindow();
+            stage.close();
+        }
     }
 
 
-    /**
-     * Met à jour le label de comptage
-     */
+    // Met à jour le label de comptage
+
     private void updateCountLabel() {
+        if (countLabel == null) return;
+
         int count = filteredList.size();
         countLabel.setText(count + " tâche" + (count > 1 ? "s" : ""));
     }
 
-    /**
-     * Met à jour la barre de statut
-     */
+    // Met à jour la barre de statut
+
     private void updateStatusBar() {
         updateStatusBar("Prêt");
     }
 
     private void updateStatusBar(String message) {
-        statusLabel.setText(message);
+        if (statusLabel != null) {
+            statusLabel.setText(message);
+        }
     }
 
-    /**
-     * Affiche un message d'erreur
-     */
+    // Affiche un message d'erreur
+
     private void showError(String message) {
-        messageLabel.setText("❌ " + message);
-        messageLabel.setStyle("-fx-text-fill: #e74c3c;");
-        messageLabel.setVisible(true);
-        messageLabel.setManaged(true);
+        if (messageLabel != null) {
+            messageLabel.setText("❌ " + message);
+            messageLabel.setStyle("-fx-text-fill: #e74c3c;");
+            messageLabel.setVisible(true);
+            messageLabel.setManaged(true);
+        } else {
+            System.err.println("Erreur : " + message);
+        }
     }
 
-    /**
-     * Affiche un message de succès
-     */
+
+    // Affiche un message de succès
+
     private void showSuccess(String message) {
-        messageLabel.setText("✓ " + message);
-        messageLabel.setStyle("-fx-text-fill: #27ae60;");
-        messageLabel.setVisible(true);
-        messageLabel.setManaged(true);
+        if (messageLabel != null) {
+            messageLabel.setText("✓ " + message);
+            messageLabel.setStyle("-fx-text-fill: #27ae60;");
+            messageLabel.setVisible(true);
+            messageLabel.setManaged(true);
+        } else {
+            System.out.println(message);
+        }
     }
 
-    /**
-     * Cache le message
-     */
+
+    // Cache le message
+
     private void hideMessage() {
-        messageLabel.setVisible(false);
-        messageLabel.setManaged(false);
+        if (messageLabel != null) {
+            messageLabel.setVisible(false);
+            messageLabel.setManaged(false);
+        }
     }
 
-    /**
-     * Définit l'utilisateur courant
-     */
+    // Définit la tâche à modifier ou à créer
+
+    public void setTaskToEdit(Task task) {
+        if (task != null) {
+            this.selectedTask = task;
+            this.isEditMode = true;
+
+            if (formTitle != null) {
+                formTitle.setText("Modifier la tâche #" + task.getId());
+            }
+
+            if (titleField != null) titleField.setText(task.getTitle());
+            if (descriptionArea != null) descriptionArea.setText(task.getDescription());
+            if (dueDatePicker != null) dueDatePicker.setValue(task.getDueDate());
+            if (statusComboBox != null) statusComboBox.setValue(task.getStatus());
+            if (priorityComboBox != null) priorityComboBox.setValue(task.getPriority());
+
+            if (categoryComboBox != null) {
+                if (task.getCategoryId() != null) {
+                    categoryComboBox.getItems().stream()
+                            .filter(c -> c != null && c.getId() == task.getCategoryId())
+                            .findFirst()
+                            .ifPresent(categoryComboBox::setValue);
+                } else {
+                    categoryComboBox.setValue(null);
+                }
+            }
+
+            setFormFieldsDisabled(false);
+
+            if (tasksTable != null) {
+                tasksTable.getSelectionModel().select(task);
+            }
+
+            updateStatusBar("Modification de la tâche...");
+
+        } else {
+            handleNew();
+        }
+    }
+
+
+    // Définit l'utilisateur courant (appelé depuis DashboardController)
+
     public void setCurrentUserId(int userId) {
         this.currentUserId = userId;
         loadTasks();
     }
 
-    /**
-     * Récupère toutes les tâches d'un utilisateur
-     */
+
     public List<Task> getTasksByUserId(int userId) {
         try {
             return taskDAO.getTasksByUserId(userId);
@@ -632,9 +696,6 @@ public class TaskController {
         }
     }
 
-    /**
-     * Récupère une tâche par son ID
-     */
     public Task getTaskById(int id) {
         try {
             return taskDAO.getTaskById(id);
@@ -644,9 +705,6 @@ public class TaskController {
         }
     }
 
-    /**
-     * Récupère les tâches d'un utilisateur par statut
-     */
     public List<Task> getTasksByUserIdAndStatus(int userId, String status) {
         try {
             return taskDAO.getTasksByUserIdAndStatus(userId, status);
@@ -656,9 +714,6 @@ public class TaskController {
         }
     }
 
-    /**
-     * Récupère les tâches d'un utilisateur par catégorie
-     */
     public List<Task> getTasksByUserIdAndCategory(int userId, int categoryId) {
         try {
             return taskDAO.getTasksByUserIdAndCategory(userId, categoryId);
@@ -668,9 +723,6 @@ public class TaskController {
         }
     }
 
-    /**
-     * Ajoute une nouvelle tâche
-     */
     public boolean addTask(String title, String description, LocalDate dueDate,
                            String status, String priority, Integer categoryId, int userId) {
 
@@ -701,9 +753,6 @@ public class TaskController {
         }
     }
 
-    /**
-     * Met à jour une tâche existante
-     */
     public boolean updateTask(int taskId, String title, String description, LocalDate dueDate,
                               String status, String priority, Integer categoryId, int userId) {
 
@@ -744,9 +793,6 @@ public class TaskController {
         }
     }
 
-    /**
-     * Change le statut d'une tâche
-     */
     public boolean changeTaskStatus(int taskId, String newStatus, int userId) {
         try {
             Task existing = taskDAO.getTaskById(taskId);
@@ -763,9 +809,6 @@ public class TaskController {
         }
     }
 
-    /**
-     * Supprime une tâche par son ID
-     */
     public boolean deleteTask(int taskId) {
         try {
             Task existing = taskDAO.getTaskById(taskId);

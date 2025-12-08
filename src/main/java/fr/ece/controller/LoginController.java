@@ -2,6 +2,7 @@ package fr.ece.controller;
 
 import fr.ece.dao.UserDAO;
 import fr.ece.model.User;
+import fr.ece.controller.DashboardController;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -66,7 +67,7 @@ public class LoginController {
             // Connexion ok
 
             // Naviguer vers la page principale
-            goToDashboard(event);
+            goToDashboard(event, user);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -79,7 +80,7 @@ public class LoginController {
     private void handleRegister(ActionEvent event) {
 
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fr/ece/view/register.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/register.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
@@ -89,14 +90,25 @@ public class LoginController {
         }
     }
 
-    //navigation vers dashboard
-    private void goToDashboard(ActionEvent event) {
-        // on adapte vers le bon fxml
+    // navigation vers dashboard
+    private void goToDashboard(ActionEvent event, User user) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fr/ece/view/dashboard.fxml"));
+            // on charge le FXML du dashboard
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dashboard.fxml"));
+            Parent root = loader.load();
+
+            // on récupère le controller du dashboard
+            DashboardController controller = loader.getController();
+
+            // on lui passe l'utilisateur connecté
+            controller.setUser(user);
+
+            // on récupère la fenêtre actuelle et on affiche le dashboard
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
+            stage.setTitle("Task Manager - Tableau de bord");
             stage.show();
+
         } catch (IOException e) {
             e.printStackTrace();
             showError("Impossible d'ouvrir le tableau de bord.");

@@ -173,6 +173,8 @@
                         <TableColumn fx:id="titleColumn" text="Titre" prefWidth="250"/>
                         <TableColumn fx:id="statusColumn" text="Statut" prefWidth="120"/>
                         <TableColumn fx:id="priorityColumn" text="Priorité" prefWidth="100"/>
+                        <TableColumn fx:id="dueDateColumn" text="Date Limite" prefWidth="100"/>
+                        <TableColumn fx:id="ownerColumn" text="Assignée à" prefWidth="100"/>
                         <TableColumn fx:id="categoryColumn" text="Catégorie" prefWidth="150"/>
                     </columns>
                     <placeholder>

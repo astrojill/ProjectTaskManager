@@ -372,3 +372,145 @@
 .separator {
     -fx-background-color: #e1e8ed;
 }
+
+/* ====================================
+   Corrections pour les TableView
+   ==================================== */
+
+/* Style de base pour le TableView */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #ddd;
+    -fx-border-radius: 5px;
+}
+
+/* En-têtes de colonnes */
+.table-view .column-header {
+    -fx-background-color: #f5f5f5;
+    -fx-border-color: #ddd;
+    -fx-padding: 8px;
+}
+
+.table-view .column-header .label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+}
+
+/* Cellules du tableau */
+.table-view .table-cell {
+    -fx-padding: 8px;
+    -fx-border-color: transparent transparent #eee transparent;
+    -fx-text-fill: #333;
+}
+
+/* IMPORTANT: Fix pour la sélection - texte visible sur fond sélectionné */
+.table-view .table-row-cell:selected .table-cell {
+    -fx-text-fill: white !important;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.table-view .table-row-cell:selected .text {
+    -fx-fill: white !important;
+}
+
+/* Focus sur une ligne */
+.table-view:focused .table-row-cell:selected {
+    -fx-background-color: #2980b9;
+}
+
+.table-view:focused .table-row-cell:selected .table-cell {
+    -fx-text-fill: white !important;
+}
+
+/* Hover sur les lignes */
+.table-view .table-row-cell:hover {
+    -fx-background-color: #f0f8ff;
+}
+
+.table-view .table-row-cell:selected:hover {
+    -fx-background-color: #2980b9;
+}
+
+/* Lignes alternées pour meilleure lisibilité */
+.table-view .table-row-cell:odd {
+    -fx-background-color: #fafafa;
+}
+
+.table-view .table-row-cell:even {
+    -fx-background-color: white;
+}
+
+/* Placeholder quand la table est vide */
+.table-view .placeholder .label {
+    -fx-text-fill: #999;
+    -fx-font-style: italic;
+}
+
+/* Scroll bar du tableau */
+.table-view .scroll-bar:vertical,
+.table-view .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.table-view .scroll-bar .thumb {
+    -fx-background-color: #ccc;
+    -fx-background-radius: 5px;
+}
+
+.table-view .scroll-bar .thumb:hover {
+    -fx-background-color: #aaa;
+}
+
+/* ====================================
+   Amélioration du wrapping du texte
+   ==================================== */
+
+/* Pour que le texte long ne soit pas coupé */
+.table-cell {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 5px 8px;
+}
+
+/* Permettre le wrap du texte dans les cellules si nécessaire */
+.table-cell .text {
+    -fx-wrapping-width: -1; /* Auto width */
+    -fx-text-alignment: left;
+}
+
+/* Pour les colonnes de description */
+.table-view .table-column.description-column .table-cell {
+    -fx-wrap-text: true;
+}
+
+/* ====================================
+   Styles additionnels pour cohérence
+   ==================================== */
+
+/* Messages de compteur */
+.count-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #666;
+}
+
+/* Labels de formulaire */
+.form-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #555;
+}
+
+/* Messages de statut */
+.status-text {
+    -fx-text-fill: #666;
+    -fx-font-size: 12px;
+}
+
+/* Placeholder pour champs vides */
+.placeholder-label {
+    -fx-text-fill: #999;
+    -fx-font-style: italic;
+    -fx-font-size: 14px;
+}

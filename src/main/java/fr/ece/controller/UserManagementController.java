@@ -61,6 +61,7 @@ public class UserManagementController {
     public void initialize() {
         userDAO = new UserDAO();
         taskDAO = new TaskDAO();
+        usersTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         // Configurer les colonnes
         setupTableColumns();
