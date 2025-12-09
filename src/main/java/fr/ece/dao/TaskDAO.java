@@ -30,7 +30,14 @@ public class TaskDAO {
         ps.setString(4, task.getStatus().name()); // Convertit l'enum en String
         ps.setString(5, task.getPriority().name()); // Convertit l'enum en String
         ps.setObject(6, task.getCategoryId()); // Peut être null
-        ps.setInt(7, task.getUserId());
+
+        // Gérer le cas où getUserId() retourne Integer (peut être null)
+        Integer userId = task.getUserId();
+        if (userId != null) {
+            ps.setInt(7, userId);
+        } else {
+            ps.setNull(7, Types.INTEGER);
+        }
 
         int rows = ps.executeUpdate();
 
@@ -105,12 +112,37 @@ public class TaskDAO {
     }
 
     /**
+     * Récupère TOUTES les tâches (pour les administrateurs)
+     * @return Une liste de toutes les tâches, triées par date et priorité
+     */
+    public List<Task> getAllTasks() throws SQLException {
+        String sql = "SELECT * FROM tasks ORDER BY due_date ASC, priority DESC";
+        List<Task> tasks = new ArrayList<>();
+
+        Connection conn = DatabaseConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+
+        // Parcourir tous les résultats
+        while (rs.next()) {
+            tasks.add(mapTask(rs));
+        }
+
+        rs.close();
+        ps.close();
+        conn.close();
+
+        return tasks;
+    }
+
+    /**
      * Met à jour une tâche existante
+     * CORRECTION : Enlevé "AND user_id = ?" pour permettre de changer l'utilisateur assigné
      * @param task La tâche avec les nouvelles informations
      * @return true si la mise à jour a réussi, false sinon
      */
     public boolean updateTask(Task task) throws SQLException {
-        String sql = "UPDATE tasks SET title = ?, description = ?, due_date = ?, status = ?, priority = ?, category_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?";
+        String sql = "UPDATE tasks SET title = ?, description = ?, due_date = ?, status = ?, priority = ?, category_id = ?, user_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
 
         Connection conn = DatabaseConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
@@ -121,8 +153,16 @@ public class TaskDAO {
         ps.setString(4, task.getStatus().name());
         ps.setString(5, task.getPriority().name());
         ps.setObject(6, task.getCategoryId());
-        ps.setInt(7, task.getId());
-        ps.setInt(8, task.getUserId()); // Sécurité : on vérifie que la tâche appartient bien à l'utilisateur
+
+        // Gérer le cas où getUserId() retourne Integer (peut être null)
+        Integer userId = task.getUserId();
+        if (userId != null) {
+            ps.setInt(7, userId);
+        } else {
+            ps.setNull(7, Types.INTEGER);
+        }
+
+        ps.setInt(8, task.getId());
 
         int result = ps.executeUpdate();
 
@@ -231,7 +271,12 @@ public class TaskDAO {
 
         // Récupérer les IDs
         task.setCategoryId(rs.getObject("category_id", Integer.class)); // Peut être null
-        task.setUserId(rs.getInt("user_id"));
+
+        // Gérer user_id qui peut être null
+        Integer userId = rs.getObject("user_id", Integer.class);
+        if (userId != null) {
+            task.setUserId(userId);
+        }
 
         // Gérer les timestamps
         Timestamp createdAt = rs.getTimestamp("created_at");
@@ -243,13 +288,12 @@ public class TaskDAO {
     }
 
     public int countByUser(int userId) {
-        String sql = "SELECT COUNT(*) FROM tasks WHERE assigned_to = ? OR created_by = ?";
+        String sql = "SELECT COUNT(*) FROM tasks WHERE user_id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
-            stmt.setInt(2, userId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -261,6 +305,6 @@ public class TaskDAO {
             e.printStackTrace();
         }
 
-        return 0; // en cas d’erreur
+        return 0; // en cas d'erreur
     }
 }

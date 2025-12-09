@@ -102,23 +102,6 @@
                                    styleClass="text-field"/>
                     </VBox>
 
-                    <!-- Category Description -->
-                    <VBox spacing="8">
-                        <Label text="Description" styleClass="form-label"/>
-                        <TextArea fx:id="descriptionArea"
-                                  promptText="Décrivez cette catégorie..."
-                                  wrapText="true"
-                                  prefRowCount="8"
-                                  styleClass="text-area"/>
-                    </VBox>
-
-                    <!-- Category Color (Optional) -->
-                    <VBox spacing="8">
-                        <Label text="Couleur" styleClass="form-label"/>
-                        <ColorPicker fx:id="colorPicker"
-                                     maxWidth="Infinity"
-                                     styleClass="color-picker"/>
-                    </VBox>
 
                     <Region VBox.vgrow="ALWAYS"/>
 

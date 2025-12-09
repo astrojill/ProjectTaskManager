@@ -7,7 +7,6 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -22,7 +21,7 @@ public class CategoryController {
     // Catégorie actuellement en édition (null = mode "nouvelle")
     private Category currentCategory = null;
 
-    // 🌸 Scène précédente (le dashboard) - pour le bouton "Retour"
+    // Scène précédente (le dashboard) - pour le bouton "Retour"
     private Scene previousScene;
 
     // ----------- reçu depuis le Dashboard -----------
@@ -30,7 +29,7 @@ public class CategoryController {
         this.previousScene = scene;
     }
 
-    // tous les elements FXML
+    // Éléments FXML
 
     @FXML
     private TableView<Category> categoriesTable;
@@ -42,22 +41,10 @@ public class CategoryController {
     private TableColumn<Category, String> nameColumn;
 
     @FXML
-    private TableColumn<Category, String> descriptionColumn;
-
-    @FXML
-    private TableColumn<Category, Integer> tasksCountColumn;
-
-    @FXML
     private TextField searchField;
 
     @FXML
     private TextField nameField;
-
-    @FXML
-    private TextArea descriptionArea;
-
-    @FXML
-    private ColorPicker colorPicker;
 
     @FXML
     private Label countLabel;
@@ -90,12 +77,6 @@ public class CategoryController {
                 new javafx.beans.property.SimpleIntegerProperty(cell.getValue().getId()).asObject());
         nameColumn.setCellValueFactory(cell ->
                 new javafx.beans.property.SimpleStringProperty(cell.getValue().getName()));
-
-        // Pour l’instant : pas de description / nb tâches
-        descriptionColumn.setCellValueFactory(cell ->
-                new javafx.beans.property.SimpleStringProperty(""));
-        tasksCountColumn.setCellValueFactory(cell ->
-                new javafx.beans.property.SimpleIntegerProperty(0).asObject());
 
         // Formulaire désactivé au départ
         setFormEnabled(false);
@@ -144,12 +125,10 @@ public class CategoryController {
 
         // On remplit le champ nom
         nameField.setText(selected.getName());
-        descriptionArea.clear();
-        colorPicker.setValue(Color.WHITE);
         formTitle.setText("Détails de la catégorie");
     }
 
-    // barre de recherche
+    // Barre de recherche
     @FXML
     private void handleSearch() {
         String keyword = searchField.getText();
@@ -184,7 +163,7 @@ public class CategoryController {
         }
     }
 
-    // bouton nouvelle catégorie
+    // Bouton nouvelle catégorie
     @FXML
     private void handleNew() {
         currentCategory = null;
@@ -197,14 +176,18 @@ public class CategoryController {
         formTitle.setText("Nouvelle catégorie");
         statusLabel.setText("Création d'une nouvelle catégorie.");
         hideMessage();
+
+        if (nameField != null) {
+            nameField.requestFocus();
+        }
     }
 
-    // bouton modifier
+    // Bouton modifier
     @FXML
     private void handleEdit() {
         Category selected = categoriesTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("Sélectionne une catégorie à modifier.");
+            showAlert("Sélectionnez une catégorie à modifier.");
             return;
         }
 
@@ -215,21 +198,28 @@ public class CategoryController {
         formTitle.setText("Modifier la catégorie");
         statusLabel.setText("Modification de la catégorie : " + selected.getName());
         hideMessage();
+
+        if (nameField != null) {
+            nameField.requestFocus();
+        }
     }
 
-    // bouton supprimer
+    // Bouton supprimer
     @FXML
     private void handleDelete() {
         Category selected = categoriesTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("Sélectionne une catégorie à supprimer.");
+            showAlert("Sélectionnez une catégorie à supprimer.");
             return;
         }
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
         confirm.setHeaderText(null);
-        confirm.setContentText("Supprimer la catégorie \"" + selected.getName() + "\" ?");
+        confirm.setContentText("Supprimer la catégorie \"" + selected.getName() + "\" ?\n\n" +
+                "Attention : Les tâches de cette catégorie ne seront pas supprimées, " +
+                "mais n'auront plus de catégorie assignée.");
+
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
@@ -252,7 +242,7 @@ public class CategoryController {
         }
     }
 
-    // bouton enregistrer
+    // Bouton enregistrer
     @FXML
     private void handleSave() {
         String name = nameField.getText();
@@ -271,16 +261,16 @@ public class CategoryController {
                 c.setName(name);
                 boolean ok = categoryDAO.addCategory(c);
                 if (ok) {
-                    showMessage("Catégorie ajoutée.");
+                    showMessage("Catégorie ajoutée avec succès.");
                 } else {
                     showAlert("Impossible d'ajouter la catégorie.");
                 }
             } else {
-                // Modif
+                // Modification
                 currentCategory.setName(name);
                 boolean ok = categoryDAO.updateCategory(currentCategory);
                 if (ok) {
-                    showMessage("Catégorie mise à jour.");
+                    showMessage("Catégorie mise à jour avec succès.");
                 } else {
                     showAlert("Impossible de mettre à jour la catégorie.");
                 }
@@ -298,7 +288,7 @@ public class CategoryController {
         }
     }
 
-    // bouton annuler
+    // Bouton annuler
     @FXML
     private void handleCancel() {
         clearForm();
@@ -310,45 +300,52 @@ public class CategoryController {
         hideMessage();
     }
 
-    // bouton "Retour" : revenir à la scène précédente (dashboard avec user déjà chargé)
+    // Bouton "Retour" : revenir à la scène précédente (dashboard)
     @FXML
     private void handleBack() {
         if (previousScene != null) {
             Stage stage = (Stage) categoriesTable.getScene().getWindow();
             stage.setScene(previousScene);
         } else {
-            System.out.println(" Aucun écran précédent enregistré (previousScene = null)");
+            System.out.println("Aucun écran précédent enregistré (previousScene = null)");
         }
     }
 
-    // methodes utilitaires
+    // Méthodes utilitaires
     private void clearForm() {
-        nameField.clear();
-        descriptionArea.clear();
-        colorPicker.setValue(Color.WHITE);
+        if (nameField != null) {
+            nameField.clear();
+        }
     }
 
     private void setFormEnabled(boolean enabled) {
-        nameField.setDisable(!enabled);
-        descriptionArea.setDisable(!enabled);
-        colorPicker.setDisable(!enabled);
+        if (nameField != null) {
+            nameField.setDisable(!enabled);
+        }
     }
 
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Info");
+        alert.setTitle("Information");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }
 
     private void showMessage(String message) {
-        messageLabel.setText(message);
-        messageLabel.setVisible(true);
-        statusLabel.setText(message);
+        if (messageLabel != null) {
+            messageLabel.setText("✓ " + message);
+            messageLabel.setStyle("-fx-text-fill: #27ae60;");
+            messageLabel.setVisible(true);
+        }
+        if (statusLabel != null) {
+            statusLabel.setText(message);
+        }
     }
 
     private void hideMessage() {
-        messageLabel.setVisible(false);
+        if (messageLabel != null) {
+            messageLabel.setVisible(false);
+        }
     }
 }

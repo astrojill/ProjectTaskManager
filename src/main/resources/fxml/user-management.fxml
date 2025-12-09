@@ -96,36 +96,38 @@
             <!-- Users Table -->
             <TableView fx:id="usersTable"
                        VBox.vgrow="ALWAYS"
-                       styleClass="table-view">
+                       styleClass="table-view"
+                       style="-fx-selection-bar: #3498db; -fx-selection-bar-non-focused: #95a5a6;">
                 <columns>
                     <TableColumn fx:id="idColumn"
                                  text="ID"
                                  minWidth="60"
-                                 prefWidth="60"
+                                 prefWidth="70"
                                  maxWidth="80"
-                                 resizable="false"/>
+                                 resizable="false"
+                                 style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="usernameColumn"
                                  text="Nom d'utilisateur"
-                                 minWidth="150"
-                                 prefWidth="200"/>
+                                 minWidth="250"
+                                 prefWidth="350"
+                                 style="-fx-alignment: CENTER_LEFT;"/>
                     <TableColumn fx:id="roleColumn"
                                  text="Rôle"
-                                 minWidth="100"
-                                 prefWidth="120"/>
+                                 minWidth="150"
+                                 prefWidth="200"
+                                 style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="createdAtColumn"
                                  text="Date création"
-                                 minWidth="130"
-                                 prefWidth="150"/>
+                                 minWidth="180"
+                                 prefWidth="220"
+                                 style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="tasksCountColumn"
-                                 text="Tâches"
-                                 minWidth="70"
-                                 prefWidth="80"
-                                 maxWidth="100"
-                                 resizable="false"/>
-                    <TableColumn fx:id="actionsColumn"
-                                 text="Actions"
-                                 minWidth="200"
-                                 prefWidth="250"/>
+                                 text="Nb. Tâches"
+                                 minWidth="120"
+                                 prefWidth="150"
+                                 maxWidth="180"
+                                 resizable="false"
+                                 style="-fx-alignment: CENTER;"/>
                 </columns>
                 <placeholder>
                     <Label text="Aucun utilisateur trouvé" styleClass="placeholder-label"/>
@@ -133,28 +135,38 @@
             </TableView>
 
             <!-- Action Buttons -->
-            <HBox spacing="10" alignment="CENTER_LEFT">
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <padding>
+                    <Insets top="10" right="0" bottom="0" left="0"/>
+                </padding>
+
                 <Button text="Modifier le rôle"
                         onAction="#handleChangeRole"
                         styleClass="secondary-button"
                         fx:id="changeRoleButton"
-                        disable="true"/>
+                        disable="true"
+                        prefWidth="180"/>
 
                 <Button text="Réinitialiser mot de passe"
                         onAction="#handleResetPassword"
                         styleClass="secondary-button"
                         fx:id="resetPasswordButton"
-                        disable="true"/>
+                        disable="true"
+                        prefWidth="230"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label fx:id="countLabel" text="0 utilisateur(s)" styleClass="count-label"
+                       style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
 
                 <Button text="Supprimer"
                         onAction="#handleDeleteUser"
                         styleClass="danger-button"
                         fx:id="deleteButton"
-                        disable="true"/>
-
-                <Region HBox.hgrow="ALWAYS"/>
-
-                <Label fx:id="countLabel" text="0 utilisateurs" styleClass="count-label"/>
+                        disable="true"
+                        prefWidth="150"/>
             </HBox>
         </VBox>
     </center>
@@ -167,8 +179,8 @@
             </padding>
             <Label fx:id="statusLabel" text="Prêt" styleClass="status-text"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="⚠ Attention: La suppression d'un utilisateur supprime aussi ses tâches"
-                   style="-fx-font-size: 11px; -fx-text-fill: #e74c3c;"/>
+            <Label text="Attention: La suppression d'un utilisateur supprime aussi ses tâches"
+                   style="-fx-font-size: 11px; -fx-text-fill: #e74c3c; -fx-font-weight: bold;"/>
         </HBox>
     </bottom>
 </BorderPane>

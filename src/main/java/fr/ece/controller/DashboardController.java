@@ -50,6 +50,7 @@ public class DashboardController {
     @FXML private ComboBox<String> statusFilterCombo;
     @FXML private ComboBox<String> priorityFilterCombo;
     @FXML private ComboBox<String> categoryFilterCombo;
+    @FXML private ComboBox<String> userFilterCombo;
     @FXML private Button clearFiltersButton;
     @FXML private CheckBox overdueCheckBox;
 
@@ -114,6 +115,12 @@ public class DashboardController {
             categoryFilterCombo.setOnAction(e -> applyFilters());
         }
 
+        if (userFilterCombo != null) {
+            userFilterCombo.getItems().add("Tous");
+            userFilterCombo.setValue("Tous");
+            userFilterCombo.setOnAction(e -> applyFilters());
+        }
+
         if (searchField != null) {
             searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
         }
@@ -133,12 +140,26 @@ public class DashboardController {
             manageUsersButton.setVisible(isAdmin);
         }
 
+        // Afficher le filtre utilisateur seulement pour les admins
+        if (userFilterCombo != null) {
+            userFilterCombo.setVisible(isAdmin);
+            userFilterCombo.setManaged(isAdmin);
+        }
+
         refreshDashboardData();
     }
 
     public void refreshDashboardData() {
         try {
-            List<Task> fetchedTasks = taskDAO.getTasksByUserId(currentUser.getId());
+            List<Task> fetchedTasks;
+
+            // Si l'utilisateur est ADMIN, charger TOUTES les tâches
+            // Sinon, charger uniquement ses tâches
+            if (currentUser.getRole() == Role.ADMIN) {
+                fetchedTasks = taskDAO.getAllTasks();
+            } else {
+                fetchedTasks = taskDAO.getTasksByUserId(currentUser.getId());
+            }
 
             // Charger les catégories
             List<Category> categories = categoryDAO.getAllCategories();
@@ -157,6 +178,16 @@ public class DashboardController {
                         categories.stream().map(Category::getName).sorted().collect(Collectors.toList())
                 );
                 categoryFilterCombo.setValue("Toutes");
+            }
+
+            // Remplir le filtre utilisateur (seulement pour admin)
+            if (userFilterCombo != null && currentUser.getRole() == Role.ADMIN) {
+                userFilterCombo.getItems().clear();
+                userFilterCombo.getItems().add("Tous");
+                userFilterCombo.getItems().addAll(
+                        users.stream().map(User::getUsername).sorted().collect(Collectors.toList())
+                );
+                userFilterCombo.setValue("Tous");
             }
 
             // Enrichir chaque tâche avec le nom de catégorie et le nom d'utilisateur
@@ -222,6 +253,11 @@ public class DashboardController {
                 if (task.getCategoryName() == null || !task.getCategoryName().equals(categoryFilterCombo.getValue())) return false;
             }
 
+            // Nouveau : Filtre par utilisateur (pour admin)
+            if (userFilterCombo != null && !"Tous".equals(userFilterCombo.getValue())) {
+                if (task.getUserName() == null || !task.getUserName().equals(userFilterCombo.getValue())) return false;
+            }
+
             if (overdueCheckBox != null && overdueCheckBox.isSelected()) {
                 if (task.getDueDate() == null || !task.getDueDate().isBefore(LocalDate.now())) return false;
             }
@@ -238,6 +274,7 @@ public class DashboardController {
         if (statusFilterCombo != null) statusFilterCombo.setValue("Tous");
         if (priorityFilterCombo != null) priorityFilterCombo.setValue("Tous");
         if (categoryFilterCombo != null) categoryFilterCombo.setValue("Toutes");
+        if (userFilterCombo != null) userFilterCombo.setValue("Tous");
         if (overdueCheckBox != null) overdueCheckBox.setSelected(false);
 
         applyFilters();

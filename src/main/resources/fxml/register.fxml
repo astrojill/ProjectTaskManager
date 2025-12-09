@@ -78,13 +78,6 @@
                        style="-fx-font-size: 11px; -fx-text-fill: #7f8c8d;"/>
             </VBox>
 
-            <!-- Terms Checkbox -->
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <CheckBox fx:id="termsCheckbox"/>
-                <Text text="J'accepte les conditions d'utilisation"
-                      style="-fx-font-size: 12px; -fx-fill: #34495e;"/>
-            </HBox>
-
             <!-- Error/Success Label -->
             <Label fx:id="messageLabel"
                    styleClass="message-label"

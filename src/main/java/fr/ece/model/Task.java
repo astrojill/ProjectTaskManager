@@ -86,10 +86,6 @@ public class Task {
         return title;
     }
 
-    public String getUserName() {
-        return (user != null) ? user.getUsername() : "N/A";
-    }
-
     public void setTitle(String title) {
         this.title = title;
     }
@@ -158,11 +154,18 @@ public class Task {
     }
 
     public String getCategoryName() {
-        if (category != null) {
+        // Priorité 1 : utiliser categoryName si défini
+        if (categoryName != null) {
+            return categoryName;
+        }
+        // Priorité 2 : utiliser category.getName() si disponible
+        if (category != null && category.getName() != null) {
             return category.getName();
         }
-        return categoryName != null ? categoryName : "Sans Catégorie";
+        // Par défaut
+        return "Sans Catégorie";
     }
+
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
@@ -193,10 +196,16 @@ public class Task {
      * Priorité : userName (si défini) > user.getUsername() > "Non assigné"
      */
     public String getUserName() {
+        // Priorité 1 : utiliser userName si défini
         if (userName != null) {
             return userName;
         }
-        return (user != null) ? user.getUsername() : "Non assigné";
+        // Priorité 2 : utiliser user.getUsername() si disponible
+        if (user != null && user.getUsername() != null) {
+            return user.getUsername();
+        }
+        // Par défaut
+        return "Non assigné";
     }
 
     /**

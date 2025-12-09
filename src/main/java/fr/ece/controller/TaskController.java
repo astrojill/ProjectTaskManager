@@ -2,10 +2,12 @@ package fr.ece.controller;
 
 import fr.ece.dao.TaskDAO;
 import fr.ece.dao.CategoryDAO;
+import fr.ece.dao.UserDAO;
 import fr.ece.model.Task;
 import fr.ece.model.Task.Status;
 import fr.ece.model.Task.Priority;
 import fr.ece.model.Category;
+import fr.ece.model.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -45,6 +47,7 @@ public class TaskController {
     @FXML private ComboBox<Status> statusComboBox;
     @FXML private ComboBox<Priority> priorityComboBox;
     @FXML private ComboBox<Category> categoryComboBox;
+    @FXML private ComboBox<User> assignedUserComboBox;
     @FXML private Button saveButton;
     @FXML private Button cancelButton;
     @FXML private Label messageLabel;
@@ -52,11 +55,13 @@ public class TaskController {
 
     private TaskDAO taskDAO = new TaskDAO();
     private CategoryDAO categoryDAO = new CategoryDAO();
+    private UserDAO userDAO = new UserDAO();
     private ObservableList<Task> tasksList = FXCollections.observableArrayList();
     private ObservableList<Task> filteredList = FXCollections.observableArrayList();
     private Task selectedTask = null;
     private boolean isEditMode = false;
 
+    // utilisateur courant (ex : celui connecté)
     private int currentUserId = 1;
 
     @FXML
@@ -109,7 +114,7 @@ public class TaskController {
 
         initializeFilters();
 
-        initializeFormComboBoxes();
+        initializeFormComboBoxes();   // inclut maintenant aussi les utilisateurs
 
         loadTasks();
 
@@ -178,7 +183,7 @@ public class TaskController {
 
                 @Override
                 public Priority fromString(String string) {
-                    return null; // Non utilisé
+                    return null;
                 }
             });
         }
@@ -197,6 +202,36 @@ public class TaskController {
                 }
             });
         }
+
+        initializeAssignedUserComboBox();
+    }
+
+    private void initializeAssignedUserComboBox() {
+        if (assignedUserComboBox == null) return;
+
+        try {
+            List<User> users = userDAO.getAllUsers(); // il faut cette méthode dans UserDAO
+
+            assignedUserComboBox.getItems().clear();
+            assignedUserComboBox.getItems().addAll(users);
+
+            assignedUserComboBox.setConverter(new StringConverter<User>() {
+                @Override
+                public String toString(User user) {
+                    if (user == null) return "";
+                    return user.getUsername();
+                }
+
+                @Override
+                public User fromString(String string) {
+                    return null;
+                }
+            });
+
+        } catch (SQLException e) {
+            showError("Erreur lors du chargement des utilisateurs : " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void loadCategories() {
@@ -205,7 +240,7 @@ public class TaskController {
         try {
             List<Category> categories = categoryDAO.getAllCategories();
             categoryComboBox.getItems().clear();
-            categoryComboBox.getItems().add(null); // Option "Aucune catégorie"
+            categoryComboBox.getItems().add(null);
             categoryComboBox.getItems().addAll(categories);
         } catch (SQLException e) {
             showError("Erreur lors du chargement des catégories : " + e.getMessage());
@@ -246,16 +281,13 @@ public class TaskController {
         filteredList.clear();
 
         for (Task task : tasksList) {
-            // Filtre de recherche
             boolean matchesSearch = searchText.isEmpty()
                     || task.getTitle().toLowerCase().contains(searchText)
                     || (task.getDescription() != null && task.getDescription().toLowerCase().contains(searchText));
 
-            // Filtre de statut
             boolean matchesStatus = statusValue.equals("Tous")
                     || task.getStatus().toString().equals(statusValue);
 
-            // Filtre de priorité
             boolean matchesPriority = priorityValue.equals("Tous")
                     || task.getPriority().toString().equals(priorityValue);
 
@@ -271,7 +303,6 @@ public class TaskController {
     }
 
 
-    // Gère la sélection d'une tâche dans le tableau
     private void onTaskSelected(Task task) {
         selectedTask = task;
 
@@ -279,12 +310,9 @@ public class TaskController {
         if (deleteButton != null) deleteButton.setDisable(false);
         if (statusButton != null) statusButton.setDisable(false);
 
-        // Afficher les détails dans le formulaire (lecture seule ou pas selon le mode)
         displayTaskDetails(task);
     }
 
-
-    // Affiche les détails d'une tâche dans le formulaire
 
     private void displayTaskDetails(Task task) {
         if (!isEditMode) {
@@ -308,13 +336,25 @@ public class TaskController {
                 }
             }
 
-            // Désactiver les champs en mode lecture
+            if (assignedUserComboBox != null) {
+                Integer taskUserId = task.getUserId();
+                if (taskUserId != null) {
+                    assignedUserComboBox.setValue(
+                            assignedUserComboBox.getItems().stream()
+                                    .filter(u -> u != null && u.getId() == taskUserId)
+                                    .findFirst()
+                                    .orElse(null)
+                    );
+                } else {
+                    assignedUserComboBox.setValue(null);
+                }
+            }
+
             setFormFieldsDisabled(true);
         }
     }
 
 
-    // Active ou désactive les champs du formulaire
     private void setFormFieldsDisabled(boolean disabled) {
         if (titleField != null) titleField.setDisable(disabled);
         if (descriptionArea != null) descriptionArea.setDisable(disabled);
@@ -322,11 +362,12 @@ public class TaskController {
         if (statusComboBox != null) statusComboBox.setDisable(disabled);
         if (priorityComboBox != null) priorityComboBox.setDisable(disabled);
         if (categoryComboBox != null) categoryComboBox.setDisable(disabled);
+        if (assignedUserComboBox != null) assignedUserComboBox.setDisable(disabled);
         if (saveButton != null) saveButton.setDisable(disabled);
         if (cancelButton != null) cancelButton.setDisable(disabled);
     }
 
-    // Met à jour l'état du bouton Enregistrer
+
     private void updateSaveButtonState() {
         if (!isEditMode || saveButton == null) return;
 
@@ -338,7 +379,6 @@ public class TaskController {
         saveButton.setDisable(!isValid);
     }
 
-    // Recherche des tâches
 
     @FXML
     private void handleSearch() {
@@ -346,15 +386,12 @@ public class TaskController {
     }
 
 
-    // Changement de filtre
-
     @FXML
     private void handleFilterChange() {
         applyFilters();
     }
 
 
-    //  Créer une nouvelle tâche
     @FXML
     private void handleNew() {
         isEditMode = true;
@@ -367,6 +404,16 @@ public class TaskController {
         if (statusComboBox != null) statusComboBox.setValue(Status.TODO);
         if (priorityComboBox != null) priorityComboBox.setValue(Priority.MEDIUM);
         if (categoryComboBox != null) categoryComboBox.setValue(null);
+        if (assignedUserComboBox != null) {
+            // par défaut, on peut sélectionner l’utilisateur courant s’il est dans la liste
+            assignedUserComboBox.getItems().stream()
+                    .filter(u -> u != null && u.getId() == currentUserId)
+                    .findFirst()
+                    .ifPresentOrElse(
+                            assignedUserComboBox::setValue,
+                            () -> assignedUserComboBox.setValue(null)
+                    );
+        }
 
         setFormFieldsDisabled(false);
 
@@ -384,8 +431,6 @@ public class TaskController {
     }
 
 
-    // Modifier une tâche existante
-
     @FXML
     private void handleEdit() {
         if (selectedTask == null) {
@@ -396,8 +441,6 @@ public class TaskController {
         setTaskToEdit(selectedTask);
     }
 
-
-    // Enregistrer une tâche (création ou modification)
 
     @FXML
     private void handleSave() {
@@ -415,6 +458,8 @@ public class TaskController {
         Category category = (categoryComboBox != null) ? categoryComboBox.getValue() : null;
         Integer categoryId = (category != null) ? category.getId() : null;
 
+        User assignedUser = (assignedUserComboBox != null) ? assignedUserComboBox.getValue() : null;
+
         if (title.isEmpty()) {
             showError("Le titre de la tâche est obligatoire");
             return;
@@ -422,6 +467,11 @@ public class TaskController {
 
         if (status == null || priority == null) {
             showError("Le statut et la priorité sont obligatoires");
+            return;
+        }
+
+        if (assignedUser == null) {
+            showError("Veuillez sélectionner un utilisateur à qui assigner la tâche");
             return;
         }
 
@@ -435,7 +485,7 @@ public class TaskController {
                 newTask.setStatus(status);
                 newTask.setPriority(priority);
                 newTask.setCategoryId(categoryId);
-                newTask.setUserId(currentUserId);
+                newTask.setUserId(assignedUser.getId());
 
                 boolean success = taskDAO.addTask(newTask);
                 if (success) {
@@ -452,6 +502,7 @@ public class TaskController {
                 selectedTask.setStatus(status);
                 selectedTask.setPriority(priority);
                 selectedTask.setCategoryId(categoryId);
+                selectedTask.setUserId(assignedUser.getId());
 
                 boolean success = taskDAO.updateTask(selectedTask);
                 if (success) {
@@ -472,7 +523,6 @@ public class TaskController {
     }
 
 
-    // Annuler l'édition
     @FXML
     private void handleCancel() {
         isEditMode = false;
@@ -485,6 +535,7 @@ public class TaskController {
         if (statusComboBox != null) statusComboBox.setValue(null);
         if (priorityComboBox != null) priorityComboBox.setValue(null);
         if (categoryComboBox != null) categoryComboBox.setValue(null);
+        if (assignedUserComboBox != null) assignedUserComboBox.setValue(null);
 
         setFormFieldsDisabled(true);
 
@@ -502,8 +553,6 @@ public class TaskController {
         updateStatusBar("Prêt");
     }
 
-
-    // Supprimer une tâche
 
     @FXML
     private void handleDelete() {
@@ -537,7 +586,6 @@ public class TaskController {
     }
 
 
-    // Changer le statut d'une tâche
     @FXML
     private void handleChangeStatus() {
         if (selectedTask == null) {
@@ -568,7 +616,6 @@ public class TaskController {
         });
     }
 
-    // Retour à l'écran précédent (ferme la fenêtre)
 
     @FXML
     private void handleBack() {
@@ -579,8 +626,6 @@ public class TaskController {
     }
 
 
-    // Met à jour le label de comptage
-
     private void updateCountLabel() {
         if (countLabel == null) return;
 
@@ -588,7 +633,6 @@ public class TaskController {
         countLabel.setText(count + " tâche" + (count > 1 ? "s" : ""));
     }
 
-    // Met à jour la barre de statut
 
     private void updateStatusBar() {
         updateStatusBar("Prêt");
@@ -600,7 +644,6 @@ public class TaskController {
         }
     }
 
-    // Affiche un message d'erreur
 
     private void showError(String message) {
         if (messageLabel != null) {
@@ -614,8 +657,6 @@ public class TaskController {
     }
 
 
-    // Affiche un message de succès
-
     private void showSuccess(String message) {
         if (messageLabel != null) {
             messageLabel.setText("✓ " + message);
@@ -628,8 +669,6 @@ public class TaskController {
     }
 
 
-    // Cache le message
-
     private void hideMessage() {
         if (messageLabel != null) {
             messageLabel.setVisible(false);
@@ -637,7 +676,6 @@ public class TaskController {
         }
     }
 
-    // Définit la tâche à modifier ou à créer
 
     public void setTaskToEdit(Task task) {
         if (task != null) {
@@ -665,6 +703,21 @@ public class TaskController {
                 }
             }
 
+            if (assignedUserComboBox != null) {
+                Integer taskUserId = task.getUserId();
+                if (taskUserId != null) {
+                    assignedUserComboBox.getItems().stream()
+                            .filter(u -> u != null && u.getId() == taskUserId)
+                            .findFirst()
+                            .ifPresentOrElse(
+                                    assignedUserComboBox::setValue,
+                                    () -> assignedUserComboBox.setValue(null)
+                            );
+                } else {
+                    assignedUserComboBox.setValue(null);
+                }
+            }
+
             setFormFieldsDisabled(false);
 
             if (tasksTable != null) {
@@ -678,8 +731,6 @@ public class TaskController {
         }
     }
 
-
-    // Définit l'utilisateur courant (appelé depuis DashboardController)
 
     public void setCurrentUserId(int userId) {
         this.currentUserId = userId;

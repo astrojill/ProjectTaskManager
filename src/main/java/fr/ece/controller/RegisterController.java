@@ -12,60 +12,65 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * Contrôleur pour la page d'inscription.
+ * Gère la création de comptes avec validation et sécurisation des mots de passe.
+ */
 public class RegisterController {
 
-    // éléments fxml
+    // Composants FXML
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private PasswordField confirmPasswordField;
-    @FXML private CheckBox termsCheckbox;
     @FXML private Label messageLabel;
     @FXML private Label usernameHint;
     @FXML private Label passwordStrength;
-
     @FXML private RadioButton userRoleRadio;
     @FXML private RadioButton adminRoleRadio;
     @FXML private javafx.scene.layout.VBox roleContainer;
 
     private UserDAO userDAO;
 
-    // initialisation
+    /**
+     * Initialisation du contrôleur.
+     * Appelée automatiquement après le chargement du FXML.
+     */
     @FXML
     public void initialize() {
         userDAO = new UserDAO();
 
-        // Cacher le message
         messageLabel.setVisible(false);
         messageLabel.setManaged(false);
 
-        // Vérifier si c'est le premier utilisateur
+        // Premier utilisateur = admin automatiquement
         checkFirstUser();
 
-        // Validation en temps réel du mot de passe
+        // Validation en temps réel lors de la saisie
         passwordField.textProperty().addListener((obs, oldVal, newVal) -> {
             updatePasswordStrength(newVal);
         });
 
-        // Validation du nom d'utilisateur
         usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
             validateUsername(newVal);
         });
     }
 
-    // méthode handleRegister
+    /**
+     * Gère le clic sur le bouton d'inscription.
+     */
     @FXML
     private void handleRegister(ActionEvent event) {
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
 
-        // Validation globale
+        // Valider les champs
         if (!validateForm(username, password, confirmPassword)) {
             return;
         }
 
         try {
-            // Vérifier si le nom d'utilisateur existe déjà
+            // Vérifier si le username existe déjà
             User existingUser = userDAO.getUserByUsername(username);
             if (existingUser != null) {
                 showError("Ce nom d'utilisateur est déjà pris");
@@ -73,34 +78,32 @@ public class RegisterController {
                 return;
             }
 
-            // Créer le nouvel utilisateur
+            // Créer l'utilisateur
             User newUser = new User();
             newUser.setUsername(username);
 
-            // Hasher le mot de passe (BCrypt)
+            // Hasher le mot de passe avec BCrypt (sécurité)
             String hashedPassword = PasswordUtils.hashPassword(password);
             newUser.setPasswordHash(hashedPassword);
 
-            // Déterminer le rôle
+            // Attribuer le rôle
             if (roleContainer.isVisible() && adminRoleRadio.isSelected()) {
                 newUser.setRole(User.Role.ADMIN);
             } else {
                 newUser.setRole(User.Role.USER);
             }
 
-            // Sauvegarder dans la base de données
-            boolean success = userDAO.createUser(newUser); // <-- ICI : createUser au lieu de save
+            // Enregistrer en base
+            boolean success = userDAO.createUser(newUser);
 
             if (success) {
                 showSuccess("Compte créé avec succès ! Redirection...");
 
+                // Pause de 2 secondes avant redirection (meilleure UX)
                 javafx.animation.PauseTransition pause =
-                        new javafx.animation.PauseTransition(
-                                javafx.util.Duration.seconds(2)
-                        );
+                        new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2));
                 pause.setOnFinished(e -> redirectToLogin());
                 pause.play();
-
             } else {
                 showError("Erreur lors de la création du compte");
             }
@@ -111,19 +114,18 @@ public class RegisterController {
         }
     }
 
-    // méthode handleBackToLogin
+    /**
+     * Retour à l'écran de connexion.
+     */
     @FXML
     private void handleBackToLogin(ActionEvent event) {
         redirectToLogin();
     }
 
-    // validation
-
+    /**
+     * Valide le formulaire complet avant soumission.
+     */
     private boolean validateForm(String username, String password, String confirmPassword) {
-        if (!termsCheckbox.isSelected()) {
-            showError("Vous devez accepter les conditions d'utilisation");
-            return false;
-        }
 
         if (username.isEmpty()) {
             showError("Le nom d'utilisateur est obligatoire");
@@ -137,6 +139,7 @@ public class RegisterController {
             return false;
         }
 
+        // Regex : seulement lettres, chiffres et underscores
         if (!username.matches("[a-zA-Z0-9_]+")) {
             showError("Le nom d'utilisateur ne peut contenir que des lettres, chiffres et underscores");
             usernameField.requestFocus();
@@ -164,6 +167,9 @@ public class RegisterController {
         return true;
     }
 
+    /**
+     * Valide le username en temps réel et affiche un retour visuel.
+     */
     private void validateUsername(String username) {
         if (username.isEmpty()) {
             usernameHint.setText("3 caractères minimum, lettres et chiffres uniquement");
@@ -187,6 +193,10 @@ public class RegisterController {
         usernameHint.setStyle("-fx-text-fill: #27ae60;");
     }
 
+    /**
+     * Calcule et affiche la force du mot de passe.
+     * Score de 0 à 6 basé sur la longueur et la complexité.
+     */
     private void updatePasswordStrength(String password) {
         if (password.isEmpty()) {
             passwordStrength.setText("Minimum 8 caractères");
@@ -196,13 +206,15 @@ public class RegisterController {
 
         int strength = 0;
 
+        // Critères de force
         if (password.length() >= 8) strength++;
         if (password.length() >= 12) strength++;
-        if (password.matches(".*[A-Z].*")) strength++;
-        if (password.matches(".*[a-z].*")) strength++;
-        if (password.matches(".*\\d.*")) strength++;
-        if (password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) strength++;
+        if (password.matches(".*[A-Z].*")) strength++;      // Majuscule
+        if (password.matches(".*[a-z].*")) strength++;      // Minuscule
+        if (password.matches(".*\\d.*")) strength++;         // Chiffre
+        if (password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) strength++; // Caractère spécial
 
+        // Affichage selon le score
         switch (strength) {
             case 0:
             case 1:
@@ -226,16 +238,20 @@ public class RegisterController {
         }
     }
 
+    /**
+     * Vérifie si c'est le premier utilisateur.
+     * Si oui, le rôle admin est automatiquement sélectionné et forcé.
+     */
     private void checkFirstUser() {
         try {
-            // si aucun user → premier compte = admin
             int userCount = userDAO.getAllUsers().size();
 
             if (userCount == 0) {
+                // Afficher les options de rôle
                 roleContainer.setVisible(true);
                 roleContainer.setManaged(true);
                 adminRoleRadio.setSelected(true);
-                adminRoleRadio.setDisable(true); // premier user forcé admin
+                adminRoleRadio.setDisable(true); // Forcer admin pour le premier user
             }
 
         } catch (Exception e) {
@@ -243,6 +259,9 @@ public class RegisterController {
         }
     }
 
+    /**
+     * Redirige vers la page de connexion.
+     */
     private void redirectToLogin() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
@@ -257,13 +276,19 @@ public class RegisterController {
         }
     }
 
+    /**
+     * Affiche un message d'erreur en rouge.
+     */
     private void showError(String message) {
-        messageLabel.setText("❌ " + message);
+        messageLabel.setText("✖ " + message);
         messageLabel.setStyle("-fx-background-color: #fadbd8; -fx-text-fill: #e74c3c;");
         messageLabel.setVisible(true);
         messageLabel.setManaged(true);
     }
 
+    /**
+     * Affiche un message de succès en vert.
+     */
     private void showSuccess(String message) {
         messageLabel.setText("✓ " + message);
         messageLabel.setStyle("-fx-background-color: #d5f4e6; -fx-text-fill: #27ae60;");

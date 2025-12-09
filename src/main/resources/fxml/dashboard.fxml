@@ -16,12 +16,8 @@
     <top>
         <VBox>
             <MenuBar styleClass="menu-bar">
-                <Menu text="Fichier">
+                <Menu text="Profil">
                     <MenuItem text="Déconnexion" onAction="#handleLogout"/>
-                </Menu>
-                <Menu text="Gestion">
-                    <MenuItem text="Gérer les catégories" onAction="#handleManageCategories"/>
-                    <MenuItem text="Gérer les utilisateurs" onAction="#handleManageUsers"/>
                 </Menu>
             </MenuBar>
 
@@ -124,6 +120,9 @@
                         </HBox.margin>
                     </Label>
                     <ComboBox fx:id="priorityFilterCombo" prefWidth="150"/>
+
+                    <Label text="Utilisateur:" fx:id="userFilterLabel" />
+                    <ComboBox fx:id="userFilterCombo" prefWidth="150"/>
                 </HBox>
 
                 <!-- Filters Row 2 -->
