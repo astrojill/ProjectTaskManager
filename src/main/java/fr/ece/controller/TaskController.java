@@ -114,7 +114,7 @@ public class TaskController {
 
         initializeFilters();
 
-        initializeFormComboBoxes();   // inclut maintenant aussi les utilisateurs
+        initializeFormComboBoxes();
 
         loadTasks();
 
@@ -379,19 +379,6 @@ public class TaskController {
         saveButton.setDisable(!isValid);
     }
 
-
-    @FXML
-    private void handleSearch() {
-        applyFilters();
-    }
-
-
-    @FXML
-    private void handleFilterChange() {
-        applyFilters();
-    }
-
-
     @FXML
     private void handleNew() {
         isEditMode = true;
@@ -429,18 +416,6 @@ public class TaskController {
 
         if (titleField != null) titleField.requestFocus();
     }
-
-
-    @FXML
-    private void handleEdit() {
-        if (selectedTask == null) {
-            showError("Veuillez sélectionner une tâche à modifier");
-            return;
-        }
-
-        setTaskToEdit(selectedTask);
-    }
-
 
     @FXML
     private void handleSave() {
@@ -553,79 +528,6 @@ public class TaskController {
         updateStatusBar("Prêt");
     }
 
-
-    @FXML
-    private void handleDelete() {
-        if (selectedTask == null) {
-            showError("Veuillez sélectionner une tâche à supprimer");
-            return;
-        }
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation");
-        alert.setHeaderText("Supprimer la tâche");
-        alert.setContentText("Êtes-vous sûr de vouloir supprimer la tâche \"" +
-                selectedTask.getTitle() + "\" ?");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                boolean success = taskDAO.deleteTask(selectedTask.getId());
-                if (success) {
-                    showSuccess("Tâche supprimée avec succès");
-                    loadTasks();
-                    handleCancel();
-                } else {
-                    showError("Erreur lors de la suppression de la tâche");
-                }
-            } catch (SQLException e) {
-                showError("Erreur lors de la suppression : " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    @FXML
-    private void handleChangeStatus() {
-        if (selectedTask == null) {
-            showError("Veuillez sélectionner une tâche");
-            return;
-        }
-
-        ChoiceDialog<Status> dialog = new ChoiceDialog<>(selectedTask.getStatus(), Status.values());
-        dialog.setTitle("Changer le statut");
-        dialog.setHeaderText("Changer le statut de la tâche");
-        dialog.setContentText("Nouveau statut:");
-
-        Optional<Status> result = dialog.showAndWait();
-        result.ifPresent(status -> {
-            try {
-                selectedTask.setStatus(status);
-                boolean success = taskDAO.updateTask(selectedTask);
-                if (success) {
-                    showSuccess("Statut modifié avec succès");
-                    loadTasks();
-                } else {
-                    showError("Erreur lors du changement de statut");
-                }
-            } catch (SQLException e) {
-                showError("Erreur lors du changement de statut : " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
-    }
-
-
-    @FXML
-    private void handleBack() {
-        if (tasksTable != null) {
-            Stage stage = (Stage) tasksTable.getScene().getWindow();
-            stage.close();
-        }
-    }
-
-
     private void updateCountLabel() {
         if (countLabel == null) return;
 
@@ -735,143 +637,5 @@ public class TaskController {
     public void setCurrentUserId(int userId) {
         this.currentUserId = userId;
         loadTasks();
-    }
-
-
-    public List<Task> getTasksByUserId(int userId) {
-        try {
-            return taskDAO.getTasksByUserId(userId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public Task getTaskById(int id) {
-        try {
-            return taskDAO.getTaskById(id);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public List<Task> getTasksByUserIdAndStatus(int userId, String status) {
-        try {
-            return taskDAO.getTasksByUserIdAndStatus(userId, status);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public List<Task> getTasksByUserIdAndCategory(int userId, int categoryId) {
-        try {
-            return taskDAO.getTasksByUserIdAndCategory(userId, categoryId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public boolean addTask(String title, String description, LocalDate dueDate,
-                           String status, String priority, Integer categoryId, int userId) {
-
-        if (title == null || title.trim().isEmpty()) {
-            return false;
-        }
-
-        Task task = new Task();
-        task.setTitle(title.trim());
-        task.setDescription(description != null ? description.trim() : "");
-        task.setDueDate(dueDate);
-
-        try {
-            task.setStatus(Status.valueOf(status));
-            task.setPriority(Priority.valueOf(priority));
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-
-        task.setCategoryId(categoryId);
-        task.setUserId(userId);
-
-        try {
-            return taskDAO.addTask(task);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean updateTask(int taskId, String title, String description, LocalDate dueDate,
-                              String status, String priority, Integer categoryId, int userId) {
-
-        if (title == null || title.trim().isEmpty()) {
-            return false;
-        }
-
-        Task existing;
-        try {
-            existing = taskDAO.getTaskById(taskId);
-            if (existing == null) {
-                return false;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        existing.setTitle(title.trim());
-        existing.setDescription(description != null ? description.trim() : "");
-        existing.setDueDate(dueDate);
-
-        try {
-            existing.setStatus(Status.valueOf(status));
-            existing.setPriority(Priority.valueOf(priority));
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-
-        existing.setCategoryId(categoryId);
-        existing.setUserId(userId);
-
-        try {
-            return taskDAO.updateTask(existing);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean changeTaskStatus(int taskId, String newStatus, int userId) {
-        try {
-            Task existing = taskDAO.getTaskById(taskId);
-            if (existing == null) {
-                return false;
-            }
-
-            existing.setStatus(Status.valueOf(newStatus));
-            return taskDAO.updateTask(existing);
-
-        } catch (SQLException | IllegalArgumentException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean deleteTask(int taskId) {
-        try {
-            Task existing = taskDAO.getTaskById(taskId);
-            if (existing == null) {
-                return false;
-            }
-
-            return taskDAO.deleteTask(taskId);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 }

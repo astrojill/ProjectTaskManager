@@ -72,10 +72,6 @@ public class User {
         this.role = role; // USER ou ADMIN
     }
 
-    public String getRoleAsString() {
-        return (role != null) ? role.name() : null;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }

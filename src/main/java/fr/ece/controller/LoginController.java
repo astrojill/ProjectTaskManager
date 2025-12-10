@@ -2,7 +2,6 @@ package fr.ece.controller;
 
 import fr.ece.dao.UserDAO;
 import fr.ece.model.User;
-import fr.ece.controller.DashboardController;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

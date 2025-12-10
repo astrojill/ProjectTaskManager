@@ -114,20 +114,12 @@ public class Task {
         this.status = status;
     }
 
-    public String getStatusAsString() {
-        return (status != null) ? status.name() : null;
-    }
-
     public Priority getPriority() {
         return priority;
     }
 
     public void setPriority(Priority priority) {
         this.priority = priority;
-    }
-
-    public String getPriorityAsString() {
-        return (priority != null) ? priority.name() : null;
     }
 
     public Category getCategory() {

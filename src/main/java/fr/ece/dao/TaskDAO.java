@@ -193,62 +193,6 @@ public class TaskDAO {
     }
 
     /**
-     * Récupère les tâches d'un utilisateur par statut
-     * @param userId L'ID de l'utilisateur
-     * @param status Le statut des tâches (TODO, IN_PROGRESS, DONE)
-     * @return Une liste des tâches correspondantes
-     */
-    public List<Task> getTasksByUserIdAndStatus(int userId, String status) throws SQLException {
-        String sql = "SELECT * FROM tasks WHERE user_id = ? AND status = ? ORDER BY due_date ASC";
-        List<Task> tasks = new ArrayList<>();
-
-        Connection conn = DatabaseConnection.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setInt(1, userId);
-        ps.setString(2, status);
-
-        ResultSet rs = ps.executeQuery();
-
-        while (rs.next()) {
-            tasks.add(mapTask(rs));
-        }
-
-        rs.close();
-        ps.close();
-        conn.close();
-
-        return tasks;
-    }
-
-    /**
-     * Récupère les tâches d'un utilisateur par catégorie
-     * @param userId L'ID de l'utilisateur
-     * @param categoryId L'ID de la catégorie
-     * @return Une liste des tâches de cette catégorie
-     */
-    public List<Task> getTasksByUserIdAndCategory(int userId, int categoryId) throws SQLException {
-        String sql = "SELECT * FROM tasks WHERE user_id = ? AND category_id = ? ORDER BY due_date ASC";
-        List<Task> tasks = new ArrayList<>();
-
-        Connection conn = DatabaseConnection.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setInt(1, userId);
-        ps.setInt(2, categoryId);
-
-        ResultSet rs = ps.executeQuery();
-
-        while (rs.next()) {
-            tasks.add(mapTask(rs));
-        }
-
-        rs.close();
-        ps.close();
-        conn.close();
-
-        return tasks;
-    }
-
-    /**
      * Méthode helper pour convertir un ResultSet en objet Task
      * @param rs Le ResultSet contenant les données de la tâche
      * @return Un objet Task rempli avec les données du ResultSet

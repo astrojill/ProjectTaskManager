@@ -37,36 +37,6 @@ public class UserDAO {
         return result > 0;
     }
 
-    public User getUserById(int id) throws SQLException {
-        String sql = "SELECT * FROM users WHERE id = ?";
-
-        Connection conn = DatabaseConnection.getConnection();
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-        pstmt.setInt(1, id);
-
-        ResultSet rs = pstmt.executeQuery();
-        User user = null;
-
-        if (rs.next()) {
-            user = new User();
-            user.setId(rs.getInt("id"));
-            user.setUsername(rs.getString("username"));
-            user.setPasswordHash(rs.getString("password_hash"));
-            user.setRole(Role.valueOf(rs.getString("role")));
-
-            Timestamp createdAt = rs.getTimestamp("created_at");
-            if (createdAt != null) {
-                user.setCreatedAt(createdAt.toLocalDateTime());
-            }
-        }
-
-        rs.close();
-        pstmt.close();
-        conn.close();
-
-        return user;
-    }
-
     public User getUserByUsername(String username) throws SQLException {
         String sql = "SELECT * FROM users WHERE username = ?";
 

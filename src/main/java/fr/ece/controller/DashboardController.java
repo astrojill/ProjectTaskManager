@@ -7,7 +7,6 @@ import fr.ece.model.Category;
 import fr.ece.model.Task;
 import fr.ece.model.User;
 import fr.ece.model.Task.Status;
-import fr.ece.model.Task.Priority;
 import fr.ece.model.User.Role;
 
 import javafx.collections.FXCollections;
@@ -75,7 +74,6 @@ public class DashboardController {
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         priorityColumn.setCellValueFactory(new PropertyValueFactory<>("priority"));
 
-        // Utiliser categoryName au lieu de category
         categoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
 
         if (dueDateColumn != null) {
@@ -83,7 +81,6 @@ public class DashboardController {
         }
 
         if (ownerColumn != null) {
-            // Utiliser userName au lieu de owner
             ownerColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
         }
 
@@ -249,11 +246,9 @@ public class DashboardController {
             }
 
             if (categoryFilterCombo != null && !"Toutes".equals(categoryFilterCombo.getValue())) {
-                // Utiliser categoryName au lieu de getCategory()
                 if (task.getCategoryName() == null || !task.getCategoryName().equals(categoryFilterCombo.getValue())) return false;
             }
 
-            // Nouveau : Filtre par utilisateur (pour admin)
             if (userFilterCombo != null && !"Tous".equals(userFilterCombo.getValue())) {
                 if (task.getUserName() == null || !task.getUserName().equals(userFilterCombo.getValue())) return false;
             }
@@ -439,38 +434,5 @@ public class DashboardController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    public void filterByDateRange(LocalDate startDate, LocalDate endDate) {
-        filteredTaskList.setPredicate(task -> {
-            if (task.getDueDate() == null) return false;
-            return !task.getDueDate().isBefore(startDate) && !task.getDueDate().isAfter(endDate);
-        });
-
-        updateTaskStatistics(filteredTaskList.stream().collect(Collectors.toList()));
-    }
-
-    public void filterByKeyword(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            filteredTaskList.setPredicate(p -> true);
-        } else {
-            String lower = keyword.toLowerCase();
-            filteredTaskList.setPredicate(task ->
-                    task.getTitle().toLowerCase().contains(lower)
-                            || (task.getDescription() != null
-                            && task.getDescription().toLowerCase().contains(lower))
-            );
-        }
-
-        updateTaskStatistics(filteredTaskList.stream().collect(Collectors.toList()));
-    }
-
-    public List<Task> getDisplayedTasks() {
-        return filteredTaskList.stream().collect(Collectors.toList());
-    }
-
-    @FXML
-    private void exportTasksToCSV() {
-        showAlert("Export CSV", "Fonctionnalité d'export à implémenter.", Alert.AlertType.INFORMATION);
     }
 }
