@@ -38,4 +38,4 @@ src/<br>
 │     │    └─ user-management.fxml<br>
 │     ├─ css/<br>
 │     │    └─ styles.css<br>
-│     └─ config.properties<br>
+│     └─ config.properties Ce fichier contient le username et le mdp de la bdd mysql (valeur par défaut) merci de le créer
